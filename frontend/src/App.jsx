@@ -1109,9 +1109,6 @@ const AuthLayout = ({ onLogin }) => {
     );
 };
 
-/* =======================================
-   SYSTEM BOOT
-======================================= */
 export default function App() {
   const [isLogged, setIsLogged] = useState(false);
   const [screen, setScreen] = useState("dashboard");
