@@ -73,7 +73,9 @@ try:
     breast_cancer_model = joblib.load(get_model_path("breast_cancer_model.pkl"))
     breast_cancer_scaler = joblib.load(get_model_path("breast_cancer_scaler.pkl"))
     # Load doctors data
-    doctors_df = pd.read_pickle(get_model_path("doctors.pkl"))
+    doctors_df = joblib.load(get_model_path("doctors.pkl"))
+    if not isinstance(doctors_df, pd.DataFrame):
+        doctors_df = pd.DataFrame(doctors_df)
 except Exception as e:
     logger.error(f"Neural Matrix Loading Error: {str(e)}")
     diabetes_model = None
