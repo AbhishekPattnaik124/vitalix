@@ -14,7 +14,7 @@ venv/
 
 # Models & Data
 backend/appointments.json
-backend/models/*.pkl
+# backend/models/*.pkl ALLOWED FOR DEPLOYMENT
 
 # OS
 .DS_Store

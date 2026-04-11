@@ -58,19 +58,25 @@ class UserAuth(BaseModel):
 # =====================================
 # 3. LOAD ML MODELS
 # =====================================
-# (Ensure paths exist or handle errors)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+def get_model_path(filename):
+    return os.path.join(BASE_DIR, "models", filename)
+
 try:
-    diabetes_model = joblib.load("models/diabetes_model.pkl")
-    diabetes_scaler = joblib.load("models/diabetes_scaler.pkl")
-    heart_model = joblib.load("models/heart_disease_model.pkl")
-    heart_scaler = joblib.load("models/heart_scaler.pkl")
-    liver_model = joblib.load("models/liver_disease_model.pkl")
-    liver_scaler = joblib.load("models/liver_scaler.pkl")
-    breast_model = joblib.load("models/breast_cancer_model.pkl")
-    breast_scaler = joblib.load("models/breast_cancer_scaler.pkl")
-    doctors_df = joblib.load("models/doctors.pkl")
+    diabetes_model = joblib.load(get_model_path("diabetes_model.pkl"))
+    diabetes_scaler = joblib.load(get_model_path("diabetes_scaler.pkl"))
+    heart_model = joblib.load(get_model_path("heart_disease_model.pkl"))
+    heart_scaler = joblib.load(get_model_path("heart_scaler.pkl"))
+    liver_model = joblib.load(get_model_path("liver_disease_model.pkl"))
+    liver_scaler = joblib.load(get_model_path("liver_scaler.pkl"))
+    breast_cancer_model = joblib.load(get_model_path("breast_cancer_model.pkl"))
+    breast_cancer_scaler = joblib.load(get_model_path("breast_cancer_scaler.pkl"))
+    # Load doctors data
+    doctors_df = pd.read_pickle(get_model_path("doctors.pkl"))
 except Exception as e:
-    logger.error(f"Failed to load critical ML assets: {e}")
+    logger.error(f"Neural Matrix Loading Error: {str(e)}")
+    diabetes_model = None
     # Fallback/Dummy logic if files missing (mostly for development environment safety)
     doctors_df = pd.DataFrame(columns=["doctor_id", "first_name", "last_name", "specialization", "experience", "hospital_branch"])
 
