@@ -142,6 +142,8 @@ const diseases = [
   { id: "pneumonia", name: "Pneumonia", color: "#38BDF8", icon: <ImageIcon size={28} />, desc: "Detailed airway opacity and fluid detection.", imgReq: "Upload Chest X-Ray Scan" }
 ];
 
+const API_BASE_URL = "https://vitalix-xy2r.onrender.com";
+
 const DOCTOR_ACCOUNTS = [
   { email: "alice.chen@vitalix.com", pass: "cardio2026", name: "Dr. Alice Chen", loc: "City Central Clinic" },
   { email: "r.kumar@vitalix.com", pass: "blood2026", name: "Dr. Rajesh Kumar", loc: "Global Health Institute" },
@@ -167,7 +169,7 @@ const DashboardLayout = ({ children, screen, setScreen, userEmail, userRole, han
 
   const initPharmacy = async () => {
       try {
-          await fetch("http://127.0.0.1:8000/api/medicines/init", { method: "POST" });
+          await fetch(`${API_BASE_URL}/api/medicines/init`, { method: "POST" });
       } catch (e) { console.error("Database sync failed."); }
   };
   useEffect(() => { initPharmacy(); }, []);
@@ -234,11 +236,11 @@ const DashboardWidgets = ({ userEmail }) => {
 
   useEffect(() => {
      const sync = async () => {
-         const resA = await fetch("http://127.0.0.1:8000/appointments");
+         const resA = await fetch(`${API_BASE_URL}/appointments`);
          const dataA = await resA.json();
          setApts(dataA.filter(a => a.userEmail === userEmail));
          
-         const resP = await fetch(`http://127.0.0.1:8000/api/pharma-orders?email=${userEmail}`);
+         const resP = await fetch(`${API_BASE_URL}/api/pharma-orders?email=${userEmail}`);
          const dataP = await resP.json();
          setPharma(dataP);
      };
@@ -332,7 +334,7 @@ const PredictionForm = ({ disease, onBack, userEmail }) => {
   const bookApt = async () => {
       if(!aptDate || !aptTime) return alert("System Requires a localized Time & Date matrix to lock appointment.");
       try {
-          const res = await fetch("http://127.0.0.1:8000/appointments", {
+          const res = await fetch(`${API_BASE_URL}/appointments`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -465,7 +467,7 @@ const ConsultationNetwork = ({ userEmail }) => {
     const [paying, setPaying] = useState(false);
     useEffect(() => { 
         const sync = async () => {
-            const res = await fetch("http://127.0.0.1:8000/appointments");
+            const res = await fetch(`${API_BASE_URL}/appointments`);
             const data = await res.json();
             setApps(data.filter(a => a.userEmail === userEmail));
         };
@@ -475,13 +477,13 @@ const ConsultationNetwork = ({ userEmail }) => {
     const handlePayment = async (id) => {
         setPaying(id);
         try {
-            await fetch(`http://127.0.0.1:8000/appointments/${id}/status`, {
+            await fetch(`${API_BASE_URL}/appointments/${id}/status`, {
                 method: "PUT",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({ status: "accepted", paymentStatus: "paid" })
             });
             // Refresh
-            const res = await fetch("http://127.0.0.1:8000/appointments");
+            const res = await fetch(`${API_BASE_URL}/appointments`);
             const data = await res.json();
             setApps(data.filter(a => a.userEmail === userEmail));
         } catch(e) {}
@@ -494,7 +496,7 @@ const ConsultationNetwork = ({ userEmail }) => {
         const targetEmail = userEmail || "patient@vitalix.com";
 
         try {
-            const req = await fetch('http://127.0.0.1:8000/api/send-ticket', {
+            const req = await fetch(`${API_BASE_URL}/api/send-ticket`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: targetEmail, doctor: app.doctor, location: app.location, disease: app.disease, date: payloadDate, time: payloadTime })
@@ -557,13 +559,13 @@ const ConsultationNetwork = ({ userEmail }) => {
 const ClinicalWorkbench = () => {
     const [requests, setRequests] = useState([]);
     const sync = async () => {
-        const res = await fetch("http://127.0.0.1:8000/appointments");
+        const res = await fetch(`${API_BASE_URL}/appointments`);
         setRequests(await res.json());
     };
     useEffect(() => { sync(); }, []);
     
     const approve = async (id) => {
-        await fetch(`http://127.0.0.1:8000/appointments/${id}/status`, {
+        await fetch(`${API_BASE_URL}/appointments/${id}/status`, {
             method: "PUT",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({ status: "accepted" })
@@ -599,11 +601,11 @@ const SystemAdminDashboard = () => {
     const [restocks, setRestocks] = useState([]);
     
     const sync = async () => {
-        const resA = await fetch("http://127.0.0.1:8000/appointments");
+        const resA = await fetch(`${API_BASE_URL}/appointments`);
         const apps = await resA.json();
-        const resP = await fetch("http://127.0.0.1:8000/api/pharma-orders");
+        const resP = await fetch(`${API_BASE_URL}/api/pharma-orders`);
         const phOrd = await resP.json();
-        const resR = await fetch("http://127.0.0.1:8000/api/restock-requests");
+        const resR = await fetch(`${API_BASE_URL}/api/restock-requests`);
         setRestocks(await resR.json());
 
         const rev = apps.filter(a => a.paymentStatus === 'paid').length * 500;
@@ -614,14 +616,14 @@ const SystemAdminDashboard = () => {
     useEffect(() => { sync(); }, []);
 
     const approveRestock = async (req) => {
-        await fetch(`http://127.0.0.1:8000/api/approve-restock/${req.id}`, { method: "POST" });
+        await fetch(`${API_BASE_URL}/api/approve-restock/${req.id}`, { method: "POST" });
         alert(`GLOBAL LOGISTICS OVERRIDE: 50 units of ${req.medName} deployed to active pharmacy grid.`);
         sync();
     };
 
     const approvePharmaOrder = async (orderId) => {
         const tgt = stats.pharma.find(o => o.id === orderId);
-        await fetch('http://127.0.0.1:8000/api/dispatch-medicine', { 
+        await fetch(`${API_BASE_URL}/api/dispatch-medicine`, { 
             method: 'POST', 
             headers: {'Content-Type': 'application/json'}, 
             body: JSON.stringify({ email: tgt.email, order_id: tgt.id, total: tgt.total }) 
@@ -769,7 +771,7 @@ const QuantumPharmacy = ({ userEmail }) => {
 
     useEffect(() => {
         const fetchMeds = async () => {
-            const res = await fetch("http://127.0.0.1:8000/api/medicines");
+            const res = await fetch(`${API_BASE_URL}/api/medicines`);
             const data = await res.json();
             setMeds(data);
         };
@@ -785,7 +787,7 @@ const QuantumPharmacy = ({ userEmail }) => {
 
     const requestRestock = async (med) => {
         try {
-            const res = await fetch("http://127.0.0.1:8000/api/restock-request", {
+            const res = await fetch(`${API_BASE_URL}/api/restock-request`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({ medId: med.id, medName: med.name, userEmail: userEmail })
@@ -797,7 +799,7 @@ const QuantumPharmacy = ({ userEmail }) => {
     const processOrder = async () => {
         const netTotal = cart.reduce((acc, c) => acc + (parseFloat(c.price) * c.cartQty), 0);
         try {
-            const res = await fetch("http://127.0.0.1:8000/api/pharma-order", {
+            const res = await fetch(`${API_BASE_URL}/api/pharma-order`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({ email: userEmail, items: cart, total: netTotal, gateway })
@@ -806,7 +808,7 @@ const QuantumPharmacy = ({ userEmail }) => {
                 setCart([]); setCheckout(false);
                 alert(`ENCRYPTED TRANSACTION CLEARED.\n₹${netTotal} successfully processed via ${gateway.toUpperCase()} Gateway. Pharmaceuticals dispatched to logistics queue.`);
                 // Refresh meds
-                const resM = await fetch("http://127.0.0.1:8000/api/medicines");
+                const resM = await fetch(`${API_BASE_URL}/api/medicines`);
                 setMeds(await resM.json());
             }
         } catch (e) { alert("Transaction Gateway Unreachable."); }
@@ -1000,7 +1002,7 @@ const AuthLayout = ({ onLogin }) => {
         
         if (isRegister) {
             try {
-                const res = await fetch("http://127.0.0.1:8000/api/register", {
+                const res = await fetch(`${API_BASE_URL}/api/register`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email, password: pass, role, name })
@@ -1017,7 +1019,7 @@ const AuthLayout = ({ onLogin }) => {
         }
 
         try {
-            const res = await fetch("http://127.0.0.1:8000/api/login", {
+            const res = await fetch(`${API_BASE_URL}/api/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password: pass, role })

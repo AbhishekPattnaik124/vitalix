@@ -32,7 +32,7 @@ To initialize the database with 100 medicine records:
    ```
 2. **Frontend**:
    ```bash
-   cd frontend/vite-react
+   cd frontend
    npm install
    npm run dev
    ```
