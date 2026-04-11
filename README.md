@@ -74,8 +74,7 @@ vitalix/
 
 ## 🌐 Live Deployment
 
-* Frontend: https://your-vercel-url.vercel.app
-* Backend: https://your-backend.onrender.com
+* Frontend: (https://vitalix-virid.vercel.app/)
 
 ---
 
