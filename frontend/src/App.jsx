@@ -29,17 +29,19 @@ const GlobalStyles = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
     
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; scroll-behavior: smooth; }
     body, html, #root { width: 100%; height: 100%; background: ${THEME.background}; color: ${THEME.text}; overflow-x: hidden; }
     
     /* Modern Scrollbar */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.3); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(59, 130, 246, 0.5); }
     
     /* Input Highlights */
     input[type="date"]::-webkit-calendar-picker-indicator,
     input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.5; }
+    input:focus { outline: none; border-color: #60A5FA !important; box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
 
     /* Ultra Advanced Animations */
     @keyframes gradientBackground {
@@ -79,11 +81,11 @@ const GlobalStyles = () => (
 
 const CinematicBackground = () => (
   <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", overflow: "hidden", zIndex: -1, background: "#020617" }}>
-      <div style={{ position: "absolute", top: "-20%", left: "-10%", width: "70vw", height: "70vw", background: "radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(0,0,0,0) 60%)", filter: "blur(60px)", animation: "float 20s infinite alternate ease-in-out" }} />
-      <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: "80vw", height: "80vw", background: "radial-gradient(circle, rgba(139,92,246,0.1) 0%, rgba(0,0,0,0) 60%)", filter: "blur(80px)", animation: "float 25s infinite alternate-reverse ease-in-out" }} />
-      <div style={{ position: "absolute", top: "30%", left: "40%", width: "50vw", height: "50vw", background: "radial-gradient(circle, rgba(16,185,129,0.08) 0%, rgba(0,0,0,0) 70%)", filter: "blur(60px)", animation: "float 18s infinite alternate ease-in-out" }} />
-      {/* Mesh grid overlay */}
-      <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)", backgroundSize: "60px 60px", perspective: "1000px", transform: "rotateX(60deg) scale(2)", transformOrigin: "top center", opacity: 0.3 }} />
+      <div style={{ position: "absolute", top: "-20%", left: "-10%", width: "70vw", height: "70vw", background: "radial-gradient(circle, rgba(59,130,246,0.1) 0%, rgba(0,0,0,0) 60%)", filter: "blur(60px)", animation: "float 20s infinite alternate ease-in-out", willChange: "transform" }} />
+      <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: "80vw", height: "80vw", background: "radial-gradient(circle, rgba(139,92,246,0.08) 0%, rgba(0,0,0,0) 60%)", filter: "blur(80px)", animation: "float 25s infinite alternate-reverse ease-in-out", willChange: "transform" }} />
+      <div style={{ position: "absolute", top: "30%", left: "40%", width: "50vw", height: "50vw", background: "radial-gradient(circle, rgba(16,185,129,0.06) 0%, rgba(0,0,0,0) 70%)", filter: "blur(60px)", animation: "float 18s infinite alternate ease-in-out", willChange: "transform" }} />
+      {/* Mesh grid overlay - Performance Optimized */}
+      <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundImage: "linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.01) 1px, transparent 1px)", backgroundSize: "80px 80px", opacity: 0.5 }} />
   </div>
 );
 
@@ -104,15 +106,15 @@ const Button = ({ children, onClick, variant = "primary", style = {}, disabled =
   const bg = isDanger ? THEME.danger : isPrimary ? THEME.accent : isOutline ? "transparent" : THEME.surfaceGlow;
   return (
     <motion.button
-      whileHover={!disabled && { scale: 1.05, boxShadow: isPrimary ? `0 0 25px ${THEME.accentGlow}` : "none" }} 
-      whileTap={!disabled && { scale: 0.95 }}
+      whileHover={!disabled && { scale: 1.02, y: -2, boxShadow: isPrimary ? `0 15px 30px rgba(59, 130, 246, 0.4)` : "none" }} 
+      whileTap={!disabled && { scale: 0.98 }}
       onClick={onClick} disabled={disabled}
       style={{
         background: bg, color: "#FFFFFF", border: isOutline ? `1px solid ${THEME.border}` : "none",
-        padding: "16px 32px", borderRadius: "12px", fontWeight: 700, fontSize: "15px", letterSpacing: "0.5px",
-        cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.5 : 1, 
-        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "10px", 
-        backgroundSize: "200% auto", transition: "all 0.3s ease", position: "relative", overflow: "hidden", ...style
+        padding: "14px 28px", borderRadius: "14px", fontWeight: 700, fontSize: "14px", 
+        cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.6 : 1, 
+        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px", 
+        transition: "all 0.4s cubic-bezier(0.23, 1, 0.32, 1)", position: "relative", overflow: "hidden", ...style
       }}
     >
       {children}
@@ -557,7 +559,7 @@ const ConsultationNetwork = ({ userEmail }) => {
 
       {apps.length === 0 ? <Card><p style={{fontWeight:800, color:THEME.muted, textAlign:"center"}}>NO ACTIVE MISSIONS</p></Card> : (
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-            {apps.map((app, i) => (
+            {apps.slice().reverse().map((app, i) => (
                 <motion.div key={app.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i*0.1 }}>
                     <Card style={{ padding: "30px", border: activeCheckout === app.id ? `1px solid ${THEME.accent}` : `1px solid ${THEME.border}` }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
