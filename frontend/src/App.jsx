@@ -7,7 +7,7 @@ import {
   Watch, Image as ImageIcon, AlertOctagon, Database, Server, Calendar, Clock,
   Zap, Star, Hexagon
 } from "lucide-react";
-import { motion, AnimatePresence, MotionConfig } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 /* =======================================
    GOAT VISION OS - ULTRA GLASSMORPHISM
@@ -29,14 +29,7 @@ const GlobalStyles = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
     
-    * { 
-      margin: 0; 
-      padding: 0; 
-      box-sizing: border-box; 
-      font-family: 'Outfit', sans-serif; 
-      transition: none !important; 
-      animation: none !important; 
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
     body, html, #root { width: 100%; height: 100%; background: ${THEME.background}; color: ${THEME.text}; overflow-x: hidden; }
     
     /* Modern Scrollbar */
@@ -48,6 +41,24 @@ const GlobalStyles = () => (
     input[type="date"]::-webkit-calendar-picker-indicator,
     input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.5; }
 
+    /* Ultra Advanced Animations */
+    @keyframes gradientBackground {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(2deg); }
+      100% { transform: translateY(0px) rotate(0deg); }
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
     .glass-panel {
       background: rgba(15, 23, 42, 0.6);
       backdrop-filter: blur(24px) saturate(180%);
@@ -57,37 +68,22 @@ const GlobalStyles = () => (
     }
     
     .shimmer-text {
-      color: #fff;
-    }
-
-    /* Responsiveness Classes */
-    @media (max-width: 1024px) {
-      .desktop-only { display: none !important; }
-      .sidebar { width: 0 !important; transform: translateX(-100%); }
-      .sidebar.open { width: 280px !important; transform: translateX(0); z-index: 100; position: fixed; height: 100vh; }
-      .main-content { padding: 20px !important; }
-      .header { padding: 0 20px !important; }
-      .widgets-grid { grid-template-columns: repeat(2, 1fr) !important; }
-      .auth-container { flex-direction: column !important; padding: 40px 20px !important; justify-content: center !important; align-items: center !important; }
-      .auth-form { width: 100% !important; max-width: 450px !important; position: static !important; }
-      .hero-section { text-align: center !important; margin-bottom: 40px !important; }
-      .hero-section h1 { font-size: 48px !important; }
-    }
-
-    @media (max-width: 640px) {
-      .widgets-grid { grid-template-columns: 1fr !important; }
-      .history-grid { grid-template-columns: 1fr !important; }
-      .header-search { display: none !important; }
-      .sidebar.open { width: 100% !important; }
+      background: linear-gradient(90deg, #fff, #94a3b8, #fff);
+      background-size: 200% auto;
+      color: transparent;
+      -webkit-background-clip: text;
+      animation: shimmer 3s linear infinite;
     }
   `}</style>
 );
 
 const CinematicBackground = () => (
   <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", overflow: "hidden", zIndex: -1, background: "#020617" }}>
-      <div style={{ position: "absolute", top: "-20%", left: "-10%", width: "70vw", height: "70vw", background: "radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(0,0,0,0) 60%)", filter: "blur(60px)" }} />
-      <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: "80vw", height: "80vw", background: "radial-gradient(circle, rgba(139,92,246,0.1) 0%, rgba(0,0,0,0) 60%)", filter: "blur(80px)" }} />
-      <div style={{ position: "absolute", top: "30%", left: "40%", width: "50vw", height: "50vw", background: "radial-gradient(circle, rgba(16,185,129,0.08) 0%, rgba(0,0,0,0) 70%)", filter: "blur(60px)" }} />
+      <div style={{ position: "absolute", top: "-20%", left: "-10%", width: "70vw", height: "70vw", background: "radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(0,0,0,0) 60%)", filter: "blur(60px)", animation: "float 20s infinite alternate ease-in-out" }} />
+      <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: "80vw", height: "80vw", background: "radial-gradient(circle, rgba(139,92,246,0.1) 0%, rgba(0,0,0,0) 60%)", filter: "blur(80px)", animation: "float 25s infinite alternate-reverse ease-in-out" }} />
+      <div style={{ position: "absolute", top: "30%", left: "40%", width: "50vw", height: "50vw", background: "radial-gradient(circle, rgba(16,185,129,0.08) 0%, rgba(0,0,0,0) 70%)", filter: "blur(60px)", animation: "float 18s infinite alternate ease-in-out" }} />
+      {/* Mesh grid overlay */}
+      <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)", backgroundSize: "60px 60px", perspective: "1000px", transform: "rotateX(60deg) scale(2)", transformOrigin: "top center", opacity: 0.3 }} />
   </div>
 );
 
@@ -178,31 +174,25 @@ const DashboardLayout = ({ children, screen, setScreen, userEmail, userRole, han
   };
   useEffect(() => { initPharmacy(); }, []);
 
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const NavIcon = ({ icon: Icon, label, id }) => (
-    <motion.div whileHover={{ x: 5, background: "rgba(255,255,255,0.05)" }} onClick={() => { setScreen(id); setMobileMenuOpen(false); }} 
-       style={{ display: "flex", alignItems: "center", gap: "16px", padding: "16px 20px", borderRadius: "12px", cursor: "pointer", marginBottom: "8px", background: screen === id ? "rgba(59, 130, 246, 0.15)" : "transparent", color: screen === id ? "#FFF" : THEME.muted, fontWeight: screen === id ? 800 : 500, border: screen === id ? `1px solid rgba(59, 130, 246, 0.3)` : "1px solid transparent", transition: "all 0.2s" }}>
-       <Icon size={20} color={screen === id ? "#60A5FA" : "currentColor"} />
-       <span style={{ fontSize: "15px", letterSpacing: "0.5px" }}>{label}</span>
-    </motion.div>
-  );
 
   return (
     <div style={{ display: "flex", width: "100%", height: "100vh", position: "relative" }}>
       <CinematicBackground />
       <motion.div initial={{ x: -300 }} animate={{ x: 0 }} transition={{ type: "spring", stiffness: 80 }} 
-           className={`sidebar ${mobileMenuOpen ? 'open' : ''}`}
-           style={{ width: "280px", background: "rgba(10, 15, 30, 0.8)", backdropFilter: "blur(40px)", borderRight: `1px solid ${THEME.border}`, display: "flex", flexDirection: "column", flexShrink: 0, zIndex: 100, transition: "transform 0.3s ease" }}>
-        <div style={{ padding: "40px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <img src="/logo.png" alt="Vitalix" style={{ width: "44px", height: "44px", borderRadius: "12px", objectFit: "cover", boxShadow: `0 0 25px ${THEME.accentGlow}` }} />
-            <span className="shimmer-text" style={{ fontSize: "24px", fontWeight: 800, letterSpacing: "-0.5px" }}>Vitalix OS</span>
-          </div>
-          <button className="mobile-close" onClick={() => setMobileMenuOpen(false)} style={{ background: "transparent", border: "none", color: "white", cursor: "pointer", display: window.innerWidth < 1024 ? "block" : "none" }}><ChevronRight style={{ transform: "rotate(180deg)" }} /></button>
+           style={{ width: "280px", background: "rgba(10, 15, 30, 0.7)", backdropFilter: "blur(40px)", borderRight: `1px solid ${THEME.border}`, display: "flex", flexDirection: "column", flexShrink: 0, zIndex: 10 }}>
+        <div style={{ padding: "40px 24px", display: "flex", alignItems: "center", gap: "16px" }}>
+          <img src="/logo.png" alt="Vitalix" style={{ width: "44px", height: "44px", borderRadius: "12px", objectFit: "cover", boxShadow: `0 0 25px ${THEME.accentGlow}` }} />
+          <span className="shimmer-text" style={{ fontSize: "24px", fontWeight: 800, letterSpacing: "-0.5px" }}>Vitalix OS</span>
         </div>
         <nav style={{ flex: 1, padding: "0 20px", overflowY: "auto" }}>
           <p style={{ fontSize: "11px", fontWeight: 700, color: THEME.muted, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "20px", paddingLeft: "8px" }}>Interface</p>
-          {navItems.map(item => <NavIcon key={item.id} {...item} />)}
+          {navItems.map(item => (
+            <motion.div key={item.id} whileHover={{ x: 5, background: "rgba(255,255,255,0.05)" }} onClick={() => setScreen(item.id)} 
+               style={{ display: "flex", alignItems: "center", gap: "16px", padding: "16px 20px", borderRadius: "12px", cursor: "pointer", marginBottom: "8px", background: screen === item.id ? "rgba(59, 130, 246, 0.15)" : "transparent", color: screen === item.id ? "#FFF" : THEME.muted, fontWeight: screen === item.id ? 800 : 500, border: screen === item.id ? `1px solid rgba(59, 130, 246, 0.3)` : "1px solid transparent", transition: "all 0.2s" }}>
+               <item.icon size={20} color={screen === item.id ? "#60A5FA" : "currentColor"} />
+               <span style={{ fontSize: "15px", letterSpacing: "0.5px" }}>{item.label}</span>
+            </motion.div>
+          ))}
         </nav>
         <div style={{ padding: "30px", borderTop: `1px solid ${THEME.border}`, background: "rgba(0,0,0,0.4)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
@@ -212,23 +202,21 @@ const DashboardLayout = ({ children, screen, setScreen, userEmail, userRole, han
             </div>
             <motion.div whileHover={{ scale: 1.2, color: "#F43F5E" }} onClick={handleLogout} style={{ cursor: "pointer", color: THEME.muted }}><LogOut size={20} /></motion.div>
           </div>
+          <div style={{ marginTop: "24px", padding: "8px 12px", borderRadius: "8px", background: "rgba(16, 185, 129, 0.1)", border: "1px solid rgba(16, 185, 129, 0.2)", fontSize: "11px", color: THEME.success, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontWeight: 800, letterSpacing: "0.5px" }}><Shield size={14} /> QUANTUM AES-256 SECURED</div>
         </div>
       </motion.div>
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", zIndex: 1 }}>
-        <header className="header" style={{ height: "90px", borderBottom: `1px solid ${THEME.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 50px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <button onClick={() => setMobileMenuOpen(true)} className="mobile-only" style={{ background: "transparent", border: "none", color: "white", cursor: "pointer", marginRight: "10px", display: window.innerWidth < 1024 ? "block" : "none" }}><Home size={24} /></button>
-            <div className="header-search" style={{ display: "flex", alignItems: "center", gap: "16px", background: "rgba(255,255,255,0.03)", padding: "12px 24px", borderRadius: "100px", border: `1px solid ${THEME.border}` }}>
-              <Search size={18} color={THEME.muted} />
-              <input type="text" placeholder="Access neural database..." style={{ border: "none", background:"transparent", outline: "none", color: "white", fontSize: "14px", width: "300px", fontWeight: 500 }} />
-            </div>
+        <header style={{ height: "90px", borderBottom: `1px solid ${THEME.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 50px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px", background: "rgba(255,255,255,0.03)", padding: "12px 24px", borderRadius: "100px", border: `1px solid ${THEME.border}` }}>
+            <Search size={18} color={THEME.muted} />
+            <input type="text" placeholder="Access neural database..." style={{ border: "none", background:"transparent", outline: "none", color: "white", fontSize: "14px", width: "300px", fontWeight: 500 }} />
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
              <motion.div whileHover={{ scale: 1.1, rotate: 15 }} style={{ cursor: "pointer", color: "white" }}><Bell size={24} /></motion.div>
           </div>
         </header>
-        <main className="main-content" style={{ flex: 1, overflowY: "auto", padding: "50px", position: "relative" }}>
+        <main style={{ flex: 1, overflowY: "auto", padding: "50px", position: "relative" }}>
           {children}
         </main>
       </div>
@@ -264,14 +252,14 @@ const DashboardWidgets = ({ userEmail }) => {
     <div style={{ marginBottom: "40px", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
       <div><h1 className="shimmer-text" style={{ fontSize: "42px", fontWeight: 800, margin: "0 0 12px 0", letterSpacing: "-1px" }}>Neural Diagnostics.</h1><p style={{ color: THEME.muted, margin: 0, fontWeight: 500, fontSize: "18px" }}>Welcome back to the grid, <span style={{color: "white", fontWeight: 700}}>{userEmail}</span>.</p></div>
     </div>
-    <div className="widgets-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "30px", marginBottom: "40px" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "30px", marginBottom: "40px" }}>
       <motion.div variants={item}><Card style={{ padding: "40px 30px", textAlign: "center", background: THEME.accent }}><div style={{ background: "rgba(255,255,255,0.2)", padding: "20px", borderRadius: "50%", display: "inline-flex", marginBottom: "20px" }}><Watch size={40} color="white" /></div><h3 style={{ fontSize: "20px", fontWeight: 800, margin: "0 0 8px 0" }}>Biometrics</h3><p style={{ color: "rgba(255,255,255,0.8)", fontSize: "15px", margin: 0, fontWeight: 600 }}>Live Sync Active</p></Card></motion.div>
       <motion.div variants={item}><Card style={{ padding: "40px 30px", textAlign: "center" }}><p style={{ color: THEME.muted, fontSize: "14px", fontWeight: 800, textTransform: "uppercase", marginBottom: "20px", letterSpacing:"1px" }}>Risk Baseline</p><h2 style={{ fontSize: "56px", fontWeight: 800, color: THEME.success, margin:0, lineHeight: 1 }}>Low</h2><p style={{ color: THEME.muted, fontSize: "14px", fontWeight: 500, marginTop: "20px" }}>Vital signs optimized.</p></Card></motion.div>
       <motion.div variants={item}><Card style={{ padding: "40px 30px", textAlign: "center" }}><p style={{ color: THEME.muted, fontSize: "14px", fontWeight: 800, textTransform: "uppercase", marginBottom: "20px", letterSpacing:"1px" }}>Clinical Visits</p><h2 style={{ fontSize: "56px", fontWeight: 800, color: THEME.primary, margin:0, lineHeight: 1 }}>{apts.length}</h2><p style={{ color: THEME.muted, fontSize: "14px", marginTop: "20px", fontWeight: 800 }}>Appointments Logged</p></Card></motion.div>
       <motion.div variants={item}><Card style={{ padding: "40px 30px", textAlign: "center" }}><p style={{ color: THEME.muted, fontSize: "14px", fontWeight: 800, textTransform: "uppercase", marginBottom: "20px", letterSpacing:"1px" }}>Prescriptions</p><h2 style={{ fontSize: "56px", fontWeight: 800, color: THEME.primary, margin:0, lineHeight: 1 }}>{pharma.length}</h2><p style={{ color: THEME.success, fontSize: "14px", marginTop: "20px", fontWeight: 800 }}>Pharmacy Orders Logged</p></Card></motion.div>
     </div>
 
-    <div className="history-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "30px" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "30px" }}>
         <Card style={{ padding: "30px" }}>
             <h3 style={{ margin: "0 0 20px 0", fontSize: "20px", fontWeight: 800, color: "white" }}>Longitudinal Appointment History</h3>
             {apts.length === 0 ? <p style={{ color: THEME.muted, fontWeight: 600 }}>No clinical interactions recorded.</p> : (
@@ -1044,11 +1032,11 @@ const AuthLayout = ({ onLogin }) => {
     };
 
     return (
-    <div className="auth-container" style={{ display: "flex", width: "100%", height: "100%", alignItems: "center", justifyContent: "space-between", padding: "0 10%", position: "relative" }}>
+    <div style={{ display: "flex", height: "100vh", backgroundColor: "#020617", color: "white", alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative" }}>
         <CinematicBackground />
         
-        <div className="hero-section" style={{ maxWidth: "600px", zIndex: 1 }}>
-            <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }}>
+        <div style={{ position: "absolute", left: "10%", top: "50%", transform: "translateY(-50%)", width: "400px", zIndex: 2 }}>
+            <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.2 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "30px" }}>
                     <img src="/logo.png" alt="Vitalix" style={{ width: "70px", height: "70px", borderRadius: "16px", objectFit: "cover", boxShadow: `0 0 35px rgba(59, 130, 246, 0.4)` }} />
                     <span className="shimmer-text" style={{ fontSize: "36px", fontWeight: 800, letterSpacing: "-1px" }}>Vitalix OS</span>
@@ -1062,7 +1050,7 @@ const AuthLayout = ({ onLogin }) => {
             </motion.div>
         </div>
 
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.4 }} className="auth-form" style={{ position: "relative" }}>
+        <motion.div initial={{ opacity: 0, x: 50, scale: 0.95 }} animate={{ opacity: 1, x: 0, scale: 1 }} transition={{ duration: 0.8, delay: 0.4 }} style={{ position: "absolute", right: "10%" }}>
         <div className="glass-panel" style={{ width: "450px", padding: "50px 40px", borderRadius: "32px", display: "flex", flexDirection: "column", gap: "30px" }}>
            <div>
                <h2 style={{ fontSize: "32px", fontWeight: 800, color: "white", marginBottom: "8px" }}>Identity Link</h2>
@@ -1109,6 +1097,9 @@ const AuthLayout = ({ onLogin }) => {
     );
 };
 
+/* =======================================
+   SYSTEM BOOT
+======================================= */
 export default function App() {
   const [isLogged, setIsLogged] = useState(false);
   const [screen, setScreen] = useState("dashboard");
@@ -1125,11 +1116,11 @@ export default function App() {
   if (!isLogged) return <><GlobalStyles /><AuthLayout onLogin={(e, r) => { setIsLogged(true); setEmail(e); setRole(r); setScreen(r === "admin" ? "admin_dash" : r === "doctor" ? "doctor_workbench" : "dashboard"); sessionStorage.setItem("isLoggedIn", "true"); sessionStorage.setItem("userRole", r); sessionStorage.setItem("loggedInEmail", e); }} /></>;
 
   return (
-    <MotionConfig transition={{ duration: 0 }}>
+    <>
       <GlobalStyles />
       <DashboardLayout screen={screen} setScreen={setScreen} userEmail={email} userRole={role} handleLogout={() => { sessionStorage.clear(); window.location.reload(); }}>
         <AnimatePresence mode="wait">
-          <motion.div key={screen} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0 }}>
+          <motion.div key={screen} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3, type: "tween", ease: "easeInOut" }}>
             {role === "admin" && screen === "admin_dash" ? <SystemAdminDashboard /> : 
              role === "doctor" && screen === "doctor_workbench" ? <ClinicalWorkbench /> :
               screen === "dashboard" ? <DashboardWidgets userEmail={email} /> :
@@ -1137,7 +1128,7 @@ export default function App() {
               screen === "all_screenings" ? (
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "30px" }}>
                   {diseases.map((d, i) => (
-                      <motion.div key={d.id} initial={false} animate={{ opacity: 1, y: 0 }} >
+                      <motion.div key={d.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} >
                       <Card onClick={() => setScreen(d.id)} style={{ display: "flex", flexDirection: "column", gap: "20px", height: "100%" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                               <div style={{ background: `linear-gradient(135deg, ${d.color}30 0%, transparent 100%)`, border: `1px solid ${d.color}60`, color: d.color, padding: "16px", borderRadius: "16px", boxShadow: `0 0 20px ${d.color}20` }}>{d.icon}</div>
@@ -1159,6 +1150,6 @@ export default function App() {
           </motion.div>
         </AnimatePresence>
       </DashboardLayout>
-    </MotionConfig>
+    </>
   );
 }
