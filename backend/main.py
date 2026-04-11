@@ -249,17 +249,31 @@ async def approve_restock(req_id: str):
 
 @app.post("/api/register")
 async def register(user: UserAuth):
-    existing = await users_col.find_one({"email": user.email})
-    if existing: raise HTTPException(status_code=400, detail="Identity node already exists.")
-    await users_col.insert_one(user.dict())
-    return {"status": "success"}
+    try:
+        existing = await users_col.find_one({"email": user.email})
+        if existing:
+            raise HTTPException(status_code=400, detail="Identity node already exists.")
+        user_data = {"email": user.email, "password": user.password, "role": user.role, "name": user.name, "location": user.location}
+        await users_col.insert_one(user_data)
+        return {"status": "success"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Registration error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
 
 @app.post("/api/login")
 async def login(user: UserAuth):
-    found = await users_col.find_one({"email": user.email, "password": user.password, "role": user.role})
-    if found:
-        return {"status": "success", "user": {"email": found["email"], "name": found.get("name"), "role": found["role"], "location": found.get("location")}}
-    raise HTTPException(status_code=401, detail="Invalid Credentials")
+    try:
+        found = await users_col.find_one({"email": user.email, "password": user.password, "role": user.role})
+        if found:
+            return {"status": "success", "user": {"email": found["email"], "name": found.get("name"), "role": found["role"], "location": found.get("location")}}
+        raise HTTPException(status_code=401, detail="Invalid Credentials")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Login error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
 
 @app.get("/test")
 async def test_api():
