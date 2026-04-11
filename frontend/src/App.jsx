@@ -465,6 +465,8 @@ const PredictionForm = ({ disease, onBack, userEmail }) => {
 const ConsultationNetwork = ({ userEmail }) => {
     const [apps, setApps] = useState([]);
     const [paying, setPaying] = useState(false);
+    const [activeCheckout, setActiveCheckout] = useState(null);
+
     useEffect(() => { 
         const sync = async () => {
             const res = await fetch(`${API_BASE_URL}/appointments`);
@@ -482,85 +484,133 @@ const ConsultationNetwork = ({ userEmail }) => {
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({ status: "accepted", paymentStatus: "paid", date: app.scheduled_date, time: app.scheduled_time })
             });
+            
             if(res.ok) {
-                // AUTO EMAIL TRIGGER
-                await fetch(`${API_BASE_URL}/api/send-ticket`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        email: userEmail, 
-                        doctor: app.doctor_name, 
-                        location: app.hospital_branch, 
-                        disease: app.disease, 
-                        date: app.scheduled_date, 
-                        time: app.scheduled_time 
-                    })
-                });
-                alert(`TRANSACTION CLEARED VIA ${gateway.toUpperCase()}.\nSecure Clinical Ticket has been dispatched to ${userEmail}.`);
+                let emailSent = false;
+                try {
+                    const emailRes = await fetch(`${API_BASE_URL}/api/send-ticket`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            email: userEmail, 
+                            doctor: app.doctor_name, 
+                            location: app.hospital_branch, 
+                            disease: app.disease, 
+                            date: app.scheduled_date, 
+                            time: app.scheduled_time 
+                        })
+                    });
+                    emailSent = emailRes.ok;
+                } catch (err) { emailSent = false; }
+
+                alert(`TRANSACTION AUTHENTICATED [GATEWAY: ${gateway.toUpperCase()}]\n\n${emailSent ? "SUCCESS: Clinical Ticket transmitted to your neural mailbox." : "WARNING: SMTP Relay offline. Download your ticket manually below."}`);
                 
-                // Refresh
                 const resA = await fetch(`${API_BASE_URL}/appointments`);
                 const data = await resA.json();
                 setApps(data.filter(a => a.userEmail === userEmail));
+                setActiveCheckout(null);
             }
-        } catch(e) { alert("Payment Matrix Error."); }
+        } catch(e) { alert("Matrix Financial Error: Connection to ledger severed."); }
         setPaying(false);
     };
 
     const dlLetter = (app) => {
-        const payloadDate = app.scheduled_date || "TBD (Clinical Review)";
+        const payloadDate = app.scheduled_date || "Pending Final Schedule";
         const payloadTime = app.scheduled_time || "TBD";
-        const targetEmail = userEmail || "patient@vitalix.com";
-
         const win = window.open('', '_blank');
-        win.document.write(`<div style="font-family: 'Helvetica Neue', sans-serif; padding: 50px; background: #020617; color: white;">
-            <h1 style="color: #60A5FA; text-align: center; border-bottom: 2px solid #1E293B; padding-bottom: 30px;">VITALIX SECURE TICKET</h1>
-            <h3 style="color: #10B981; text-align: center;">CONFIRMED ENCRYPTED PAYMENT (₹500 / 0.0003 BTC)</h3><br>
-            <div style="background: #0F172A; padding: 30px; border-radius: 16px; border: 1px solid #334155;">
-               <p style="font-size: 18px"><strong>PATIENT MATRIX:</strong> ${targetEmail}</p><hr style="border: 1px solid #1E293B; margin: 20px 0;">
-               <p style="font-size: 18px"><strong>SUPERVISING LEAD:</strong> ${app.doctor_name}</p>
-               <p style="font-size: 18px"><strong>GEOLOCATION:</strong> ${app.hospital_branch}</p>
-               <p style="font-size: 18px"><strong>DEPARTMENT:</strong> ${app.disease} Systems</p>
-               <p style="font-size: 18px; color: #60A5FA;"><strong>TEMPORAL COORDINATES:</strong> ${payloadDate} @ ${payloadTime}</p>
-            </div><br><p style="color: #64748B; text-align: center;">Maintain possession of this digital cipher upon arrival.</p></div>`);
+        win.document.write(`<div style="font-family: 'Inter', sans-serif; padding: 60px; background: #020617; color: white;">
+            <div style="border: 2px solid #60A5FA; padding: 40px; border-radius: 24px; background: rgba(59,130,246,0.05);">
+               <h1 style="color: #60A5FA; text-align: center; margin: 0 0 10px 0; font-size: 32px;">VITALIX MEDICAL CLEARANCE</h1>
+               <p style="text-align: center; color: #10B981; font-weight: 800; margin-bottom: 40px;">AUTHORIZED SECURE PAYLOAD</p>
+               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+                  <div>
+                    <label style="color: #64748B; font-size: 12px; font-weight: 800; text-transform: uppercase;">Patient Email</label>
+                    <p style="font-size: 18px; font-weight: 600; margin: 8px 0;">${userEmail}</p>
+                  </div>
+                  <div>
+                    <label style="color: #64748B; font-size: 12px; font-weight: 800; text-transform: uppercase;">Lead Clinician</label>
+                    <p style="font-size: 18px; font-weight: 600; margin: 8px 0;">${app.doctor_name}</p>
+                  </div>
+                  <div>
+                    <label style="color: #64748B; font-size: 12px; font-weight: 800; text-transform: uppercase;">Operational Branch</label>
+                    <p style="font-size: 18px; font-weight: 600; margin: 8px 0;">${app.hospital_branch}</p>
+                  </div>
+                  <div>
+                    <label style="color: #64748B; font-size: 12px; font-weight: 800; text-transform: uppercase;">Time Slot</label>
+                    <p style="font-size: 18px; font-weight: 600; margin: 8px 0; color: #60A5FA;">${payloadDate} @ ${payloadTime}</p>
+                  </div>
+               </div>
+               <div style="margin-top: 50px; text-align: center; border-top: 1px solid #1E293B; padding-top: 30px;">
+                  <p style="color: #64748B; margin: 0;">Verified via Vitalix Blockchain Ledger #${app.id}</p>
+               </div>
+            </div>
+        </div>`);
         setTimeout(() => win.print(), 800);
     };
 
     return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ maxWidth: "1200px", margin: "0 auto" }}>
-      <div style={{ marginBottom: "40px" }}><h1 className="shimmer-text" style={{ fontSize: "40px", fontWeight: 800, margin: "0 0 8px 0" }}>Specialist Logistics</h1><p style={{ color: THEME.muted, margin: 0, fontWeight: 500, fontSize: "16px" }}>Coordinate physical encounters with clinical operatives.</p></div>
-      {apps.length === 0 ? <Card><p style={{fontWeight:800, color:THEME.muted, textAlign:"center"}}>NO ACTIVE MISSIONS</p></Card> : apps.map((app, i) => (
-        <motion.div key={app.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i*0.1 }}>
-        <Card style={{ marginBottom: "20px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-             <div>
-                <p style={{ margin: 0, fontSize: "12px", color: THEME.success, fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px" }}>{app.disease} PROTOCOL</p>
-                <h3 style={{ margin: "8px 0 4px 0", fontSize: "24px", fontWeight: 800 }}>{app.doctor_name}</h3>
-                <p style={{ margin: 0, fontSize: "15px", color: THEME.muted, fontWeight: 600 }}>{app.hospital_branch} • <span style={{color: "white"}}>{app.scheduled_date} @ {app.scheduled_time}</span></p>
-             </div>
-             <div>
-               {app.status === "pending" && <span style={{ background: "rgba(245, 158, 11, 0.15)", color: THEME.warning, padding: "12px 24px", borderRadius: "100px", fontSize: "12px", fontWeight: 800, letterSpacing: "1px" }}>AWAITING CLINICAL AUTH</span>}
-               {app.status === "accepted" && (app.paymentStatus === "unpaid" || !app.paymentStatus) && (
-                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                     {["card", "upi", "crypto"].map(gate => (
-                         <Button key={gate} onClick={() => handlePayment(app, gate)} disabled={paying === app.id} style={{ padding: "8px 16px", fontSize: "11px", background: "rgba(255,255,255,0.05)", border: `1px solid ${THEME.border}` }}>
-                             {paying === app.id ? "..." : `${gate.toUpperCase()}`}
-                         </Button>
-                     ))}
-                     <span style={{ color: THEME.danger, fontWeight: 800, fontSize: "12px", marginLeft: "10px" }}>₹500 DUE</span>
-                   </div>
-               )}
-               {app.status === "accepted" && app.paymentStatus === "paid" && (
-                   <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                     <CheckCircle color={THEME.success} size={28} />
-                     <Button variant="outline" onClick={() => dlLetter(app)} style={{ color: "#60A5FA", borderColor: "#60A5FA" }}>Initiate Ticket DL</Button>
-                   </div>
-               )}
-             </div>
-          </div>
-        </Card>
-        </motion.div>
-      ))}
+      <div style={{ marginBottom: "40px" }}>
+          <h1 className="shimmer-text" style={{ fontSize: "40px", fontWeight: 800, margin: "0 0 8px 0" }}>Specialist Logistics</h1>
+          <p style={{ color: THEME.muted, margin: 0, fontWeight: 500, fontSize: "16px" }}>Coordinate physical encounters with clinical operatives.</p>
+      </div>
+
+      {apps.length === 0 ? <Card><p style={{fontWeight:800, color:THEME.muted, textAlign:"center"}}>NO ACTIVE MISSIONS</p></Card> : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+            {apps.map((app, i) => (
+                <motion.div key={app.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i*0.1 }}>
+                    <Card style={{ padding: "30px", border: activeCheckout === app.id ? `1px solid ${THEME.accent}` : `1px solid ${THEME.border}` }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div style={{ display: "flex", gap: "24px", alignItems: "center" }}>
+                            <div style={{ background: "rgba(59,130,246,0.1)", padding: "20px", borderRadius: "20px", color: THEME.accent }}><Shield size={32} /></div>
+                            <div>
+                                <p style={{ margin: 0, fontSize: "12px", color: THEME.success, fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px" }}>{app.disease} PROTOCOL</p>
+                                <h3 style={{ margin: "4px 0", fontSize: "22px", fontWeight: 800, color: "white" }}>{app.doctor_name}</h3>
+                                <p style={{ margin: 0, fontSize: "14px", color: THEME.muted, fontWeight: 600 }}>{app.hospital_branch} • <span style={{color: THEME.accent}}>{app.scheduled_date || "Pending"} @ {app.scheduled_time || "TBD"}</span></p>
+                            </div>
+                        </div>
+                        <div style={{ textAlign: "right" }}>
+                        {app.status === "pending" && <span style={{ background: "rgba(245, 158, 11, 0.1)", color: THEME.warning, border: `1px solid rgba(245, 158, 11, 0.2)`, padding: "10px 20px", borderRadius: "100px", fontSize: "11px", fontWeight: 800 }}>AWAITING CLINICAL AUTH</span>}
+                        
+                        {app.status === "accepted" && (app.paymentStatus === "unpaid" || !app.paymentStatus) && (
+                            <Button onClick={() => setActiveCheckout(activeCheckout === app.id ? null : app.id)} style={{ background: activeCheckout === app.id ? "transparent" : THEME.accent, border: activeCheckout === app.id ? `1px solid ${THEME.accent}` : "none", color: "white", padding: "12px 30px" }}>
+                                {activeCheckout === app.id ? "CLOSE GATEWAY" : "INITIALIZE PAYMENT (₹500)"}
+                            </Button>
+                        )}
+
+                        {app.status === "accepted" && app.paymentStatus === "paid" && (
+                            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                                <div style={{ color: THEME.success, fontWeight: 800, fontSize: "12px", border: `1px solid ${THEME.success}30`, padding: "8px 16px", borderRadius: "100px", background: `${THEME.success}10` }}>SETTLED</div>
+                                <Button onClick={() => dlLetter(app)} style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${THEME.border}`, color: "white" }}>Download Ticket</Button>
+                            </div>
+                        )}
+                        </div>
+                    </div>
+
+                    <AnimatePresence>
+                        {activeCheckout === app.id && (
+                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: "hidden" }}>
+                                <div style={{ marginTop: "30px", paddingTop: "30px", borderTop: `1px solid ${THEME.border}`, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
+                                    {[
+                                        { id: "card", name: "Credit/Debit", desc: "Global Mastercard/Visa", icon: <CreditCard size={20} /> },
+                                        { id: "upi", name: "Unified Payments", desc: "Instant Scan & Pay", icon: <Zap size={20} /> },
+                                        { id: "crypto", name: "Digital Assets", desc: "BTC/ETH Node Transfer", icon: <Shield size={20} /> }
+                                    ].map(gate => (
+                                        <div key={gate.id} onClick={() => handlePayment(app, gate.id)} style={{ padding: "24px", borderRadius: "20px", border: `1px solid ${THEME.border}`, background: "rgba(255,255,255,0.02)", cursor: "pointer", transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.borderColor = THEME.accent} onMouseLeave={e => e.currentTarget.style.borderColor = THEME.border}>
+                                            <div style={{ color: THEME.accent, marginBottom: "12px" }}>{gate.icon}</div>
+                                            <h4 style={{ margin: "0 0 4px 0", color: "white", fontSize: "16px", fontWeight: 800 }}>{gate.name}</h4>
+                                            <p style={{ margin: 0, color: THEME.muted, fontSize: "12px", fontWeight: 500 }}>{gate.desc}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                    </Card>
+                </motion.div>
+            ))}
+        </div>
+      )}
     </motion.div>
     );
 };
