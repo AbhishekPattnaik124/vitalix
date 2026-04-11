@@ -535,7 +535,7 @@ const ConsultationNetwork = ({ userEmail }) => {
              </div>
              <div>
                {app.status === "pending" && <span style={{ background: "rgba(245, 158, 11, 0.15)", color: THEME.warning, padding: "12px 24px", borderRadius: "100px", fontSize: "12px", fontWeight: 800, letterSpacing: "1px" }}>AWAITING CLINICAL AUTH</span>}
-               {app.status === "accepted" && app.paymentStatus === "unpaid" && (
+               {app.status === "accepted" && (app.paymentStatus === "unpaid" || !app.paymentStatus) && (
                    <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
                      <span style={{ color: THEME.danger, fontWeight: 800, fontSize: "14px", letterSpacing: "1px" }}>FUNDS REQUIRED:</span>
                      <Button style={{ background: "linear-gradient(90deg, #F59E0B, #EF4444)" }} onClick={() => handlePayment(app.id)} disabled={paying === app.id}>{paying === app.id ? "PROCESSING LEDGER..." : "TRANSACT ₹500"}</Button>
@@ -568,7 +568,12 @@ const ClinicalWorkbench = () => {
         await fetch(`${API_BASE_URL}/appointments/${id}/status`, {
             method: "PUT",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ status: "accepted" })
+            body: JSON.stringify({ 
+                status: "accepted", 
+                paymentStatus: "unpaid",
+                date: "Pending Schedule",
+                time: "TBD" 
+            })
         });
         sync();
     };
