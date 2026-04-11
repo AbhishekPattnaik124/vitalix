@@ -241,6 +241,22 @@ async def dispatch_medicine(req: DispatchRequest, bg: BackgroundTasks):
     bg.add_task(send_medicine_dispatch_email, req.email, req.order_id, req.total)
     return {"status": "dispatched"}
 
+@app.get("/api/seed-personnel")
+async def seed_personnel():
+    """Emergency bridge: injects official doctor/admin nodes into the cloud registry."""
+    try:
+        users = [
+            {"email": "admin@vitalix.com", "password": "admin123", "role": "admin", "name": "System Administrator"},
+            {"email": "alice.chen@vitalix.com", "password": "cardio2026", "role": "doctor", "name": "Dr. Alice Chen", "location": "City Central Clinic"},
+            {"email": "r.kumar@vitalix.com", "password": "blood2026", "role": "doctor", "name": "Dr. Rajesh Kumar", "location": "Global Health Institute"},
+            {"email": "emily.thorne@vitalix.com", "password": "neuro2026", "role": "doctor", "name": "Dr. Emily Thorne", "location": "Westside Speciality"}
+        ]
+        for u in users:
+            await users_col.update_one({"email": u["email"]}, {"$set": u}, upsert=True)
+        return {"status": "success", "message": "Official Personnel Nodes Synchronized."}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
 @app.get("/api/restock-requests")
 async def get_restocks():
     return await restocks_col.find({}, {"_id": 0}).to_list(100)
