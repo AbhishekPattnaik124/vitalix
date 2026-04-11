@@ -2,6 +2,10 @@
 
 A premium, full-stack medical diagnostics and pharmaceutical logistics platform built with React, FastAPI, and MongoDB.
 
+## ⚡ Global Deployment Status
+- **Backend Hub**: `https://vitalix-xy2r.onrender.com`
+- **Database**: MongoDB Atlas Cluster (Synched)
+
 ## 🚀 Features
 - **Neural Diagnostics**: AI-driven symptom checker.
 - **Quantum Pharmacy**: Real-time inventory management with 100+ medicines.
