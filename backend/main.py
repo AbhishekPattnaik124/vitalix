@@ -39,7 +39,13 @@ app.add_middleware(
 # MongoDB Connection
 import certifi
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/vitalix")
-client = AsyncIOMotorClient(MONGO_URI, tlsCAFile=certifi.where())
+logger.info(f"Connecting to MongoDB: {MONGO_URI[:30]}...")
+client = AsyncIOMotorClient(
+    MONGO_URI,
+    tls=True,
+    tlsCAFile=certifi.where(),
+    serverSelectionTimeoutMS=10000
+)
 db = client.vitalix
 
 # Collections
@@ -279,6 +285,25 @@ async def login(user: UserAuth):
 @app.get("/test")
 async def test_api():
     return {"message": "API Working 🚀", "status": "connected", "database": "vitalix"}
+
+@app.get("/health")
+async def health_check():
+    """Full diagnostic: tests MongoDB connectivity"""
+    mongo_status = "unknown"
+    mongo_error = None
+    try:
+        result = await client.admin.command("ping")
+        mongo_status = "connected" if result.get("ok") == 1 else "error"
+    except Exception as e:
+        mongo_status = "disconnected"
+        mongo_error = str(e)
+    return {
+        "api": "live",
+        "mongo": mongo_status,
+        "mongo_error": mongo_error,
+        "mongo_uri_set": bool(os.getenv("MONGO_URI")),
+        "certifi_path": certifi.where()
+    }
 
 @app.get("/")
 def root(): return {"status": "Vitalix OS active"}
