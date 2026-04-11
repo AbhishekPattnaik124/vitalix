@@ -4,7 +4,7 @@ motor
 dnspython
 pandas
 numpy==1.26.4
-scikit-learn==1.4.2
-python-dotenv
+scikit-learn
 joblib
+python-dotenv
 pydantic[email]
