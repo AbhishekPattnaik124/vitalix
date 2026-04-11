@@ -155,7 +155,7 @@ const DOCTOR_ACCOUNTS = [
 /* =======================================
    DASHBOARD ARCHITECTURE
 ======================================= */
-const DashboardLayout = ({ children, screen, setScreen, userEmail, userRole, handleLogout }) => {
+const DashboardLayout = ({ children, screen, setScreen, userEmail, userRole, userName, handleLogout }) => {
   const navItems = userRole === "patient" ? [
     { id: "dashboard", label: "Neural Dashboard", icon: Hexagon },
     { id: "analytics", label: "Genomic Analytics", icon: BarChart },
@@ -172,7 +172,7 @@ const DashboardLayout = ({ children, screen, setScreen, userEmail, userRole, han
   const initPharmacy = async () => {
       try {
           await fetch(`${API_BASE_URL}/api/medicines/init`, { method: "POST" });
-      } catch (e) { console.error("Initial Sync Error:", e); }
+      } catch (e) { }
   };
   useEffect(() => { initPharmacy(); }, []);
 
@@ -199,8 +199,8 @@ const DashboardLayout = ({ children, screen, setScreen, userEmail, userRole, han
         <div style={{ padding: "30px", borderTop: `1px solid ${THEME.border}`, background: "rgba(0,0,0,0.4)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
             <div style={{ flex: 1, overflow: "hidden" }}>
-              <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "white" }}>{userRole === "admin" ? "System Architect" : userRole === "doctor" ? "Clinical Lead" : "Corporate Patient"}</p>
-              <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: THEME.muted }}>{userEmail.split('@')[0]}</p>
+              <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "white", textTransform: "uppercase" }}>{userName || userRole}</p>
+              <p style={{ margin: 0, fontSize: "11px", color: THEME.muted, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{userEmail}</p>
             </div>
             <motion.div whileHover={{ scale: 1.2, color: "#F43F5E" }} onClick={handleLogout} style={{ cursor: "pointer", color: THEME.muted }}><LogOut size={20} /></motion.div>
           </div>
@@ -270,9 +270,9 @@ const DashboardWidgets = ({ userEmail }) => {
                         <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px", background: "rgba(0,0,0,0.3)", borderRadius: "12px", border: `1px solid rgba(255,255,255,0.05)` }}>
                             <div>
                                 <h4 style={{ margin: "0 0 4px 0", fontSize: "16px", color: "white" }}>{a.disease}</h4>
-                                <p style={{ margin: 0, fontSize: "13px", color: THEME.muted }}>Dr. {a.doctor} • {a.date}</p>
+                                <p style={{ margin: 0, fontSize: "13px", color: THEME.muted }}>{a.doctor_name} • {a.date}</p>
                             </div>
-                            <span style={{ fontSize: "12px", fontWeight: 800, color: a.status === 'pending' ? THEME.warning : THEME.success, background: "rgba(255,255,255,0.1)", padding: "4px 8px", borderRadius: "100px" }}>{a.status === 'pending' ? 'PENDING' : 'APPROVED'}</span>
+                            <span style={{ fontSize: "12px", fontWeight: 800, color: a.status === 'pending' ? THEME.warning : THEME.success, background: "rgba(255,255,255,0.1)", padding: "4px 8px", borderRadius: "100px" }}>{a.status === 'pending' ? 'PENDING' : 'AUTHORIZED'}</span>
                         </div>
                     ))}
                 </div>
@@ -1008,16 +1008,20 @@ const AISymptomNavigator = ({ setScreen }) => {
         if (!symptom) return;
         const low = symptom.toLowerCase();
         let target = "";
-        if (low.match(/chest|heart|pain|breath/)) target = "heart";
-        else if (low.match(/sugar|thirsty|urinate|sweet|blood/)) target = "diabetes";
-        else if (low.match(/skin|rash|itch|spot/)) target = "skin";
-        else if (low.match(/breath|cough|lung/)) target = "lung";
-        else if (low.match(/bone|joint|knee|ache/)) target = "bone";
-        else if (low.match(/headache|dizzy|brain|memory/)) target = "brain";
-        else target = "diabetes";
+        
+        // Context-aware keyword extraction
+        if (low.match(/heart|chest pain|breathless|palpitation/)) target = "heart";
+        else if (low.match(/diabet|sugar|insulin|glucose|thirsty/)) target = "diabetes";
+        else if (low.match(/leg pain|arm pain|joint|bone|fracture|knee|skel/)) target = "bone";
+        else if (low.match(/headache|dizzy|memory|confusion|brain/)) target = "brain";
+        else if (low.match(/skin|rash|itch|mole|spot/)) target = "skin";
+        else if (low.match(/cough|lung|breath/)) target = "lungs";
+        else if (low.match(/abdominal|stomach|liver|yellowing/)) target = "liver";
+        else if (low.match(/renal|kidney|urine color/)) target = "kidney";
+        else target = "all_screenings"; // Default to matrix
 
-        const mapped = diseases.find(d => d.id === target) || diseases[0];
-        setResult(mapped);
+        const found = diseases.find(d => d.id === target) || diseases.find(d => d.id === "heart");
+        setResult(found);
     };
 
     return (
@@ -1092,7 +1096,7 @@ const AuthLayout = ({ onLogin }) => {
             });
             if (res.ok) {
                 const data = await res.json();
-                onLogin(data.user.email, data.user.role);
+                onLogin(data.user.email, data.user.role, data.user.name);
             } else { alert("Unauthorized identity detected. Verify Matrix Credentials."); }
         } catch (e) { console.error("Mainframe Link Severed:", e); alert(`Mainframe Link Severed: ${e.message}`); }
     };
@@ -1171,20 +1175,37 @@ export default function App() {
   const [screen, setScreen] = useState("dashboard");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("patient");
+  const [name, setName] = useState("");
 
   useEffect(() => {
     if (sessionStorage.getItem("isLoggedIn") === "true") {
-      setIsLogged(true); setEmail(sessionStorage.getItem("loggedInEmail")); setRole(sessionStorage.getItem("userRole"));
+      setIsLogged(true); 
+      setEmail(sessionStorage.getItem("loggedInEmail")); 
+      setRole(sessionStorage.getItem("userRole"));
+      setName(sessionStorage.getItem("userName") || "");
       setScreen(sessionStorage.getItem("userRole") === "admin" ? "admin_dash" : sessionStorage.getItem("userRole") === "doctor" ? "doctor_workbench" : "dashboard");
     }
   }, []);
 
-  if (!isLogged) return <><GlobalStyles /><AuthLayout onLogin={(e, r) => { setIsLogged(true); setEmail(e); setRole(r); setScreen(r === "admin" ? "admin_dash" : r === "doctor" ? "doctor_workbench" : "dashboard"); sessionStorage.setItem("isLoggedIn", "true"); sessionStorage.setItem("userRole", r); sessionStorage.setItem("loggedInEmail", e); }} /></>;
+  const handleLogout = () => { 
+      sessionStorage.clear(); 
+      setIsLogged(false); 
+      window.location.reload(); 
+  };
+
+  if (!isLogged) return <><GlobalStyles /><AuthLayout onLogin={(e, r, n) => { 
+      setIsLogged(true); setEmail(e); setRole(r); setName(n);
+      setScreen(r === "admin" ? "admin_dash" : r === "doctor" ? "doctor_workbench" : "dashboard"); 
+      sessionStorage.setItem("isLoggedIn", "true"); 
+      sessionStorage.setItem("userRole", r); 
+      sessionStorage.setItem("loggedInEmail", e); 
+      sessionStorage.setItem("userName", n || "");
+  }} /></>;
 
   return (
     <>
       <GlobalStyles />
-      <DashboardLayout screen={screen} setScreen={setScreen} userEmail={email} userRole={role} handleLogout={() => { sessionStorage.clear(); window.location.reload(); }}>
+      <DashboardLayout screen={screen} setScreen={setScreen} userEmail={email} userRole={role} userName={name} handleLogout={handleLogout}>
         <AnimatePresence mode="wait">
           <motion.div key={screen} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3, type: "tween", ease: "easeInOut" }}>
             {role === "admin" && screen === "admin_dash" ? <SystemAdminDashboard /> : 
