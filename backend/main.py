@@ -41,24 +41,12 @@ import certifi
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/vitalix")
 logger.info(f"Connecting to MongoDB: {MONGO_URI[:30]}...")
 
-# Python 3.14 on Render has SSL/TLS compatibility issues with Atlas
-# Use tlsAllowInvalidCertificates as workaround for cloud deployment
-import sys
-if sys.version_info >= (3, 13):
-    logger.info(f"Python {sys.version_info.major}.{sys.version_info.minor} detected - using TLS workaround")
-    client = AsyncIOMotorClient(
-        MONGO_URI,
-        tls=True,
-        tlsAllowInvalidCertificates=True,
-        serverSelectionTimeoutMS=10000
-    )
-else:
-    client = AsyncIOMotorClient(
-        MONGO_URI,
-        tls=True,
-        tlsCAFile=certifi.where(),
-        serverSelectionTimeoutMS=10000
-    )
+client = AsyncIOMotorClient(
+    MONGO_URI,
+    tls=True,
+    tlsCAFile=certifi.where(),
+    serverSelectionTimeoutMS=10000
+)
 db = client.vitalix
 
 # Collections
