@@ -178,8 +178,6 @@ const DashboardLayout = ({ children, screen, setScreen, userEmail, userRole, han
   };
   useEffect(() => { initPharmacy(); }, []);
 
-
-const DashboardLayout = ({ children, screen, setScreen, userEmail, userRole, handleLogout }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const NavIcon = ({ icon: Icon, label, id }) => (
     <motion.div whileHover={{ x: 5, background: "rgba(255,255,255,0.05)" }} onClick={() => { setScreen(id); setMobileMenuOpen(false); }} 
