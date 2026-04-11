@@ -26,7 +26,9 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+import sys
 app = FastAPI(title="Vitalix OS API", version="2.0.0")
+logger.info(f"System Check: Python {sys.version} active.")
 
 app.add_middleware(
     CORSMiddleware,
