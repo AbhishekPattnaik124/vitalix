@@ -11,8 +11,9 @@ load_dotenv()
 async def init_vitalix_db():
     print("Initiating Vitalix OS Database Synthesis...")
     
+    import certifi
     MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/vitalix")
-    client = AsyncIOMotorClient(MONGO_URI)
+    client = AsyncIOMotorClient(MONGO_URI, tlsCAFile=certifi.where())
     db = client.vitalix
     
     # 1. Clear existing data if any (Fresh Startup)

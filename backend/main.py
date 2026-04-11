@@ -37,8 +37,9 @@ app.add_middleware(
 )
 
 # MongoDB Connection
+import certifi
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/vitalix")
-client = AsyncIOMotorClient(MONGO_URI)
+client = AsyncIOMotorClient(MONGO_URI, tlsCAFile=certifi.where())
 db = client.vitalix
 
 # Collections

@@ -2,6 +2,8 @@ fastapi
 uvicorn
 motor
 dnspython
+certifi
+pymongo[srv]
 pandas
 numpy==1.26.4
 scikit-learn
