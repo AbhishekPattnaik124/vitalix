@@ -5,7 +5,7 @@ import {
   Award, Users, Eye, Brain, Bone, Scan, Thermometer, Stethoscope, Building,
   MessageSquare, Mic, Map, Languages, BarChart, AlertTriangle, TrendingUp,
   Watch, Image as ImageIcon, AlertOctagon, Database, Server, Calendar, Clock,
-  Zap, Star, Hexagon
+  Zap, Star, Hexagon, CreditCard
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
