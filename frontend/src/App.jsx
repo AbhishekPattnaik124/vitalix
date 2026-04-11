@@ -170,7 +170,7 @@ const DashboardLayout = ({ children, screen, setScreen, userEmail, userRole, han
   const initPharmacy = async () => {
       try {
           await fetch(`${API_BASE_URL}/api/medicines/init`, { method: "POST" });
-      } catch (e) { console.error("Database sync failed."); }
+      } catch (e) { console.error("Initial Sync Error:", e); }
   };
   useEffect(() => { initPharmacy(); }, []);
 
@@ -1014,7 +1014,7 @@ const AuthLayout = ({ onLogin }) => {
                     const err = await res.json();
                     alert(err.detail || "Registration Conflict.");
                 }
-            } catch (e) { alert("Matrix Sync Failure."); }
+            } catch (e) { console.error("Identity Registration Failure:", e); alert(`Network Matrix Interrupt: ${e.message || "Unknown error"}`); }
             return;
         }
 
@@ -1027,8 +1027,8 @@ const AuthLayout = ({ onLogin }) => {
             if (res.ok) {
                 const data = await res.json();
                 onLogin(data.user.email, data.user.role);
-            } else { alert("Unauthorized identity detected."); }
-        } catch (e) { alert("Mainframe connection severed."); }
+            } else { alert("Unauthorized identity detected. Verify Matrix Credentials."); }
+        } catch (e) { console.error("Mainframe Link Severed:", e); alert(`Mainframe Link Severed: ${e.message}`); }
     };
 
     return (
