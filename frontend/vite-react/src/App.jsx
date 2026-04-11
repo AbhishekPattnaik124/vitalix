@@ -992,15 +992,41 @@ const AuthLayout = ({ onLogin }) => {
     const [email, setEmail] = useState("");
     const [pass, setPass] = useState("");
 
-    const handleAuth = () => {
+    const [isRegister, setIsRegister] = useState(false);
+    const [name, setName] = useState("");
+
+    const handleAuth = async () => {
         if (!email || !pass) return alert("System requires complete identity node arrays to proceed.");
-        if (role === "admin" && (email !== "admin@vitalix.com" || pass !== "admin123")) return alert("CRITICAL: Invalid Root Commands.");
-        if (role === "doctor") {
-            const doc = DOCTOR_ACCOUNTS.find(d => d.email === email && d.pass === pass);
-            if (!doc) return alert("UNAUTHORIZED CLINICAL ACCESS DETECTED.");
-            onLogin(doc.email, role); return;
+        
+        if (isRegister) {
+            try {
+                const res = await fetch("http://127.0.0.1:8000/api/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password: pass, role, name })
+                });
+                if (res.ok) {
+                    alert("Identity Node Registered. Authorization sequence ready.");
+                    setIsRegister(false);
+                } else {
+                    const err = await res.json();
+                    alert(err.detail || "Registration Conflict.");
+                }
+            } catch (e) { alert("Matrix Sync Failure."); }
+            return;
         }
-        onLogin(email, role);
+
+        try {
+            const res = await fetch("http://127.0.0.1:8000/api/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password: pass, role })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                onLogin(data.user.email, data.user.role);
+            } else { alert("Unauthorized identity detected."); }
+        } catch (e) { alert("Mainframe connection severed."); }
     };
 
     return (
@@ -1036,6 +1062,12 @@ const AuthLayout = ({ onLogin }) => {
            </div>
            
            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              {isRegister && (
+                  <motion.div initial={{opacity:0, y:-10}} animate={{opacity:1, y:0}}>
+                      <label style={{ fontSize: "11px", fontWeight: 800, color: THEME.muted, display: "block", marginBottom: "10px", letterSpacing: "2px" }}>LEGAL ENTITY NAME</label>
+                      <input type="text" placeholder="John Doe" value={name} onChange={e=>setName(e.target.value)} style={{ width: "100%", padding: "16px 20px", borderRadius: "12px", border: `1px solid rgba(255,255,255,0.1)`, background: "rgba(0,0,0,0.5)", color: "white", outline: "none", fontSize: "16px", fontWeight: 500, transition: "all 0.3s" }} />
+                  </motion.div>
+              )}
               <div>
                   <label style={{ fontSize: "11px", fontWeight: 800, color: THEME.muted, display: "block", marginBottom: "10px", letterSpacing: "2px" }}>MATRIX EMAIL</label>
                   <input type="email" placeholder="node@network.com" value={email} onChange={e=>setEmail(e.target.value)} style={{ width: "100%", padding: "16px 20px", borderRadius: "12px", border: `1px solid rgba(255,255,255,0.1)`, background: "rgba(0,0,0,0.5)", color: "white", outline: "none", fontSize: "16px", fontWeight: 500, transition: "all 0.3s" }} />
@@ -1046,14 +1078,15 @@ const AuthLayout = ({ onLogin }) => {
               </div>
            </div>
 
-           {(role === "admin" || role === "doctor") && (
+           {(role === "admin" || role === "doctor") && !isRegister && (
               <motion.div initial={{opacity:0, height:0}} animate={{opacity:1, height:"auto"}} style={{ background: "rgba(244, 63, 94, 0.1)", padding: "16px", borderRadius: "12px", border: `1px solid rgba(244, 63, 94, 0.3)`, fontSize: "13px", color: "white", fontWeight: 600, lineHeight: 1.5 }}>
                 <AlertTriangle size={16} color="#F43F5E" style={{marginBottom:"8px", display:"block"}} />
                 Strict clearance mandated. Consult backend registry keys.
               </motion.div>
            )}
 
-           <Button onClick={handleAuth} style={{ padding: "20px", fontSize: "16px", letterSpacing: "1px", marginTop: "10px" }}>INITIALIZE LINK</Button>
+           <Button onClick={handleAuth} style={{ padding: "20px", fontSize: "16px", letterSpacing: "1px", marginTop: "10px" }}>{isRegister ? "REGISTER ENTITY" : "INITIALIZE LINK"}</Button>
+           <p onClick={() => setIsRegister(!isRegister)} style={{ textAlign: "center", fontSize: "12px", cursor: "pointer", color: THEME.accent, fontWeight: 800, letterSpacing:"1px" }}>{isRegister ? "EXISTING NODE? LOGIN" : "NEW ENTITY? REGISTER"}</p>
            
            <p style={{ fontSize: "11px", color: THEME.muted, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginTop: "10px", fontWeight: 800, letterSpacing: "1px" }}><Shield size={14} color={THEME.success} /> 256-BIT ENCRYPTION LAYER ACTIVE</p>
         </div>

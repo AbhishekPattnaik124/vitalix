@@ -37,7 +37,7 @@ app.add_middleware(
 )
 
 # MongoDB Connection
-MONGO_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017/vitalix")
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/vitalix")
 client = AsyncIOMotorClient(MONGO_URI)
 db = client.vitalix
 
@@ -46,6 +46,14 @@ appointments_col = db.appointments
 medicines_col = db.medicines
 orders_col = db.orders
 restocks_col = db.restocks
+users_col = db.users
+
+class UserAuth(BaseModel):
+    email: EmailStr
+    password: str
+    role: str = "patient"
+    name: Optional[str] = None
+    location: Optional[str] = None
 
 # =====================================
 # 3. LOAD ML MODELS
@@ -231,9 +239,28 @@ async def approve_restock(req_id: str):
         return {"status": "ok"}
     return {"status": "error"}
 
+@app.post("/api/register")
+async def register(user: UserAuth):
+    existing = await users_col.find_one({"email": user.email})
+    if existing: raise HTTPException(status_code=400, detail="Identity node already exists.")
+    await users_col.insert_one(user.dict())
+    return {"status": "success"}
+
+@app.post("/api/login")
+async def login(user: UserAuth):
+    found = await users_col.find_one({"email": user.email, "password": user.password, "role": user.role})
+    if found:
+        return {"status": "success", "user": {"email": found["email"], "name": found.get("name"), "role": found["role"], "location": found.get("location")}}
+    raise HTTPException(status_code=401, detail="Invalid Credentials")
+
+@app.get("/test")
+async def test_api():
+    return {"message": "API Working 🚀", "status": "connected", "database": "vitalix"}
+
 @app.get("/")
 def root(): return {"status": "Vitalix OS active"}
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)

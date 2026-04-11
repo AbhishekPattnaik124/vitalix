@@ -11,7 +11,7 @@ load_dotenv()
 async def init_vitalix_db():
     print("Initiating Vitalix OS Database Synthesis...")
     
-    MONGO_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017/vitalix")
+    MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/vitalix")
     client = AsyncIOMotorClient(MONGO_URI)
     db = client.vitalix
     
@@ -26,10 +26,21 @@ async def init_vitalix_db():
     await db.appointments.delete_many({})
     await db.orders.delete_many({})
     await db.restocks.delete_many({})
+    await db.users.delete_many({})
     
-    print("Core Vectors Cleared. Injecting Fresh Logistics Hub...")
+    print("Core Vectors Cleared. Injecting Fresh Logistics Hub & Personnel...")
 
-    # 2. Seed Medicines (100 SKUs)
+    # 2. Seed Users (Admin & Doctors)
+    users = [
+        {"email": "admin@vitalix.com", "password": "admin123", "role": "admin", "name": "System Administrator"},
+        {"email": "alice.chen@vitalix.com", "password": "cardio2026", "role": "doctor", "name": "Dr. Alice Chen", "location": "City Central Clinic"},
+        {"email": "r.kumar@vitalix.com", "password": "blood2026", "role": "doctor", "name": "Dr. Rajesh Kumar", "location": "Global Health Institute"},
+        {"email": "emily.thorne@vitalix.com", "password": "neuro2026", "role": "doctor", "name": "Dr. Emily Thorne", "location": "Westside Speciality"}
+    ]
+    await db.users.insert_many(users)
+    print("Personnel Auth Nodes Synchronized.")
+
+    # 3. Seed Medicines (100 SKUs)
     bases = ["Amoxicillin", "Metformin", "Lisinopril", "Atorvastatin", "Amlodipine", "Albuterol", "Omeprazole", "Losartan", "Gabapentin", "Hydrochlorothiazide"]
     meds = []
     for i in range(100):
