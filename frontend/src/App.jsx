@@ -7,7 +7,7 @@ import {
   Watch, Image as ImageIcon, AlertOctagon, Database, Server, Calendar, Clock,
   Zap, Star, Hexagon
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, MotionConfig } from "framer-motion";
 
 /* =======================================
    GOAT VISION OS - ULTRA GLASSMORPHISM
@@ -29,7 +29,14 @@ const GlobalStyles = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
     
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+      font-family: 'Outfit', sans-serif; 
+      transition: none !important; 
+      animation: none !important; 
+    }
     body, html, #root { width: 100%; height: 100%; background: ${THEME.background}; color: ${THEME.text}; overflow-x: hidden; }
     
     /* Modern Scrollbar */
@@ -41,24 +48,6 @@ const GlobalStyles = () => (
     input[type="date"]::-webkit-calendar-picker-indicator,
     input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.5; }
 
-    /* Ultra Advanced Animations */
-    @keyframes gradientBackground {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-    
-    @keyframes float {
-      0% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(-20px) rotate(2deg); }
-      100% { transform: translateY(0px) rotate(0deg); }
-    }
-
-    @keyframes shimmer {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
-    }
-    
     .glass-panel {
       background: rgba(15, 23, 42, 0.6);
       backdrop-filter: blur(24px) saturate(180%);
@@ -68,11 +57,7 @@ const GlobalStyles = () => (
     }
     
     .shimmer-text {
-      background: linear-gradient(90deg, #fff, #94a3b8, #fff);
-      background-size: 200% auto;
-      color: transparent;
-      -webkit-background-clip: text;
-      animation: shimmer 3s linear infinite;
+      color: #fff;
     }
 
     /* Responsiveness Classes */
@@ -100,11 +85,9 @@ const GlobalStyles = () => (
 
 const CinematicBackground = () => (
   <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", overflow: "hidden", zIndex: -1, background: "#020617" }}>
-      <div style={{ position: "absolute", top: "-20%", left: "-10%", width: "70vw", height: "70vw", background: "radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(0,0,0,0) 60%)", filter: "blur(60px)", animation: "float 20s infinite alternate ease-in-out" }} />
-      <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: "80vw", height: "80vw", background: "radial-gradient(circle, rgba(139,92,246,0.1) 0%, rgba(0,0,0,0) 60%)", filter: "blur(80px)", animation: "float 25s infinite alternate-reverse ease-in-out" }} />
-      <div style={{ position: "absolute", top: "30%", left: "40%", width: "50vw", height: "50vw", background: "radial-gradient(circle, rgba(16,185,129,0.08) 0%, rgba(0,0,0,0) 70%)", filter: "blur(60px)", animation: "float 18s infinite alternate ease-in-out" }} />
-      {/* Mesh grid overlay */}
-      <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)", backgroundSize: "60px 60px", perspective: "1000px", transform: "rotateX(60deg) scale(2)", transformOrigin: "top center", opacity: 0.3 }} />
+      <div style={{ position: "absolute", top: "-20%", left: "-10%", width: "70vw", height: "70vw", background: "radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(0,0,0,0) 60%)", filter: "blur(60px)" }} />
+      <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: "80vw", height: "80vw", background: "radial-gradient(circle, rgba(139,92,246,0.1) 0%, rgba(0,0,0,0) 60%)", filter: "blur(80px)" }} />
+      <div style={{ position: "absolute", top: "30%", left: "40%", width: "50vw", height: "50vw", background: "radial-gradient(circle, rgba(16,185,129,0.08) 0%, rgba(0,0,0,0) 70%)", filter: "blur(60px)" }} />
   </div>
 );
 
@@ -1147,11 +1130,11 @@ export default function App() {
   if (!isLogged) return <><GlobalStyles /><AuthLayout onLogin={(e, r) => { setIsLogged(true); setEmail(e); setRole(r); setScreen(r === "admin" ? "admin_dash" : r === "doctor" ? "doctor_workbench" : "dashboard"); sessionStorage.setItem("isLoggedIn", "true"); sessionStorage.setItem("userRole", r); sessionStorage.setItem("loggedInEmail", e); }} /></>;
 
   return (
-    <>
+    <MotionConfig transition={{ duration: 0 }}>
       <GlobalStyles />
       <DashboardLayout screen={screen} setScreen={setScreen} userEmail={email} userRole={role} handleLogout={() => { sessionStorage.clear(); window.location.reload(); }}>
         <AnimatePresence mode="wait">
-          <motion.div key={screen} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3, type: "tween", ease: "easeInOut" }}>
+          <motion.div key={screen} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0 }}>
             {role === "admin" && screen === "admin_dash" ? <SystemAdminDashboard /> : 
              role === "doctor" && screen === "doctor_workbench" ? <ClinicalWorkbench /> :
               screen === "dashboard" ? <DashboardWidgets userEmail={email} /> :
@@ -1159,7 +1142,7 @@ export default function App() {
               screen === "all_screenings" ? (
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "30px" }}>
                   {diseases.map((d, i) => (
-                      <motion.div key={d.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} >
+                      <motion.div key={d.id} initial={false} animate={{ opacity: 1, y: 0 }} >
                       <Card onClick={() => setScreen(d.id)} style={{ display: "flex", flexDirection: "column", gap: "20px", height: "100%" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                               <div style={{ background: `linear-gradient(135deg, ${d.color}30 0%, transparent 100%)`, border: `1px solid ${d.color}60`, color: d.color, padding: "16px", borderRadius: "16px", boxShadow: `0 0 20px ${d.color}20` }}>{d.icon}</div>
@@ -1181,6 +1164,6 @@ export default function App() {
           </motion.div>
         </AnimatePresence>
       </DashboardLayout>
-    </>
+    </MotionConfig>
   );
 }
