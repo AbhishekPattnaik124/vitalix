@@ -170,6 +170,14 @@ class DispatchRequest(BaseModel):
     order_id: str
     total: float
 
+class TicketRequest(BaseModel):
+    email: str
+    doctor: str
+    location: str
+    disease: str
+    date: str
+    time: str
+
 # =====================================
 # 7. ROUTING
 # =====================================
@@ -285,6 +293,12 @@ async def approve_restock(req_id: str):
         await restocks_col.update_one({"id": req_id}, {"$set": {"status": "fulfilled"}})
         return {"status": "ok"}
     return {"status": "error"}
+
+@app.post("/api/send-ticket")
+async def send_ticket(req: TicketRequest, bg: BackgroundTasks):
+    """Sends the formatted clinical pass via SMTP."""
+    bg.add_task(send_appointment_status_email, req.email, req.doctor, "Specialist", req.location, req.disease, "accepted", req.date, req.time)
+    return {"status": "success"}
 
 @app.post("/api/register")
 async def register(user: UserAuth):

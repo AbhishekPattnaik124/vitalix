@@ -474,38 +474,43 @@ const ConsultationNetwork = ({ userEmail }) => {
         sync();
     }, [userEmail]);
 
-    const handlePayment = async (id) => {
-        setPaying(id);
+    const handlePayment = async (app, gateway) => {
+        setPaying(app.id);
         try {
-            await fetch(`${API_BASE_URL}/appointments/${id}/status`, {
+            const res = await fetch(`${API_BASE_URL}/appointments/${app.id}/status`, {
                 method: "PUT",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ status: "accepted", paymentStatus: "paid" })
+                body: JSON.stringify({ status: "accepted", paymentStatus: "paid", date: app.scheduled_date, time: app.scheduled_time })
             });
-            // Refresh
-            const res = await fetch(`${API_BASE_URL}/appointments`);
-            const data = await res.json();
-            setApps(data.filter(a => a.userEmail === userEmail));
-        } catch(e) {}
+            if(res.ok) {
+                // AUTO EMAIL TRIGGER
+                await fetch(`${API_BASE_URL}/api/send-ticket`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        email: userEmail, 
+                        doctor: app.doctor_name, 
+                        location: app.hospital_branch, 
+                        disease: app.disease, 
+                        date: app.scheduled_date, 
+                        time: app.scheduled_time 
+                    })
+                });
+                alert(`TRANSACTION CLEARED VIA ${gateway.toUpperCase()}.\nSecure Clinical Ticket has been dispatched to ${userEmail}.`);
+                
+                // Refresh
+                const resA = await fetch(`${API_BASE_URL}/appointments`);
+                const data = await resA.json();
+                setApps(data.filter(a => a.userEmail === userEmail));
+            }
+        } catch(e) { alert("Payment Matrix Error."); }
         setPaying(false);
     };
 
-    const dlLetter = async (app) => {
+    const dlLetter = (app) => {
         const payloadDate = app.scheduled_date || "TBD (Clinical Review)";
         const payloadTime = app.scheduled_time || "TBD";
         const targetEmail = userEmail || "patient@vitalix.com";
-
-        try {
-            const req = await fetch(`${API_BASE_URL}/api/send-ticket`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: targetEmail, doctor: app.doctor_name, location: app.hospital_branch, disease: app.disease, date: payloadDate, time: payloadTime })
-            });
-            if(req.ok) alert(`SMTP TRIGGER INCIDENT:\nSecure E-Ticket successfully transmitted through SSL encrypted tunnel to ${targetEmail}.`);
-            else alert("Backend SMTP relay failed. Ensure .env contains valid EMAIL_USER bounds.");
-        } catch (error) {
-            alert("CRITICAL WARNING: Backend Python Server unreachable. Bypassing SMTP protocol, generating local receipt only.");
-        }
 
         const win = window.open('', '_blank');
         win.document.write(`<div style="font-family: 'Helvetica Neue', sans-serif; padding: 50px; background: #020617; color: white;">
@@ -536,9 +541,13 @@ const ConsultationNetwork = ({ userEmail }) => {
              <div>
                {app.status === "pending" && <span style={{ background: "rgba(245, 158, 11, 0.15)", color: THEME.warning, padding: "12px 24px", borderRadius: "100px", fontSize: "12px", fontWeight: 800, letterSpacing: "1px" }}>AWAITING CLINICAL AUTH</span>}
                {app.status === "accepted" && (app.paymentStatus === "unpaid" || !app.paymentStatus) && (
-                   <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-                     <span style={{ color: THEME.danger, fontWeight: 800, fontSize: "14px", letterSpacing: "1px" }}>FUNDS REQUIRED:</span>
-                     <Button style={{ background: "linear-gradient(90deg, #F59E0B, #EF4444)" }} onClick={() => handlePayment(app.id)} disabled={paying === app.id}>{paying === app.id ? "PROCESSING LEDGER..." : "TRANSACT ₹500"}</Button>
+                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                     {["card", "upi", "crypto"].map(gate => (
+                         <Button key={gate} onClick={() => handlePayment(app, gate)} disabled={paying === app.id} style={{ padding: "8px 16px", fontSize: "11px", background: "rgba(255,255,255,0.05)", border: `1px solid ${THEME.border}` }}>
+                             {paying === app.id ? "..." : `${gate.toUpperCase()}`}
+                         </Button>
+                     ))}
+                     <span style={{ color: THEME.danger, fontWeight: 800, fontSize: "12px", marginLeft: "10px" }}>₹500 DUE</span>
                    </div>
                )}
                {app.status === "accepted" && app.paymentStatus === "paid" && (
