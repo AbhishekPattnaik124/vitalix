@@ -146,6 +146,7 @@ class AppointmentStatusUpdate(BaseModel):
     status: str
     date: str = "TBD"
     time: str = "TBD"
+    paymentStatus: str = "unpaid"
 
 class OrderItem(BaseModel):
     id: int
@@ -186,6 +187,7 @@ async def create_appointment(req: AppointmentRequest):
     new_app = req.model_dump()
     new_app["id"] = str(uuid.uuid4())[:8].upper()
     new_app["status"] = "pending"
+    new_app["paymentStatus"] = "unpaid"
     new_app["bookedAt"] = datetime.now().isoformat()
     await appointments_col.insert_one(new_app)
     if "_id" in new_app: del new_app["_id"]
@@ -200,7 +202,13 @@ async def get_appointments():
 async def update_appointment_status(app_id: str, update: AppointmentStatusUpdate, bg: BackgroundTasks):
     res = await appointments_col.find_one({"id": app_id})
     if res:
-        await appointments_col.update_one({"id": app_id}, {"$set": {"status": update.status, "scheduled_date": update.date, "scheduled_time": update.time}})
+        update_data = {
+            "status": update.status,
+            "scheduled_date": update.date,
+            "scheduled_time": update.time,
+            "paymentStatus": update.paymentStatus
+        }
+        await appointments_col.update_one({"id": app_id}, {"$set": update_data})
         bg.add_task(send_appointment_status_email, res["userEmail"], res["doctor_name"], res["specialization"], res["hospital_branch"], res["disease"], update.status, update.date, update.time)
         return {"status": "success"}
     return {"status": "error", "message": "Not found"}

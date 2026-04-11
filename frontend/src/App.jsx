@@ -491,15 +491,15 @@ const ConsultationNetwork = ({ userEmail }) => {
     };
 
     const dlLetter = async (app) => {
-        const payloadDate = app.date || "TBD (Clinical Review)";
-        const payloadTime = app.time || "TBD";
+        const payloadDate = app.scheduled_date || "TBD (Clinical Review)";
+        const payloadTime = app.scheduled_time || "TBD";
         const targetEmail = userEmail || "patient@vitalix.com";
 
         try {
             const req = await fetch(`${API_BASE_URL}/api/send-ticket`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: targetEmail, doctor: app.doctor, location: app.location, disease: app.disease, date: payloadDate, time: payloadTime })
+                body: JSON.stringify({ email: targetEmail, doctor: app.doctor_name, location: app.hospital_branch, disease: app.disease, date: payloadDate, time: payloadTime })
             });
             if(req.ok) alert(`SMTP TRIGGER INCIDENT:\nSecure E-Ticket successfully transmitted through SSL encrypted tunnel to ${targetEmail}.`);
             else alert("Backend SMTP relay failed. Ensure .env contains valid EMAIL_USER bounds.");
@@ -513,8 +513,8 @@ const ConsultationNetwork = ({ userEmail }) => {
             <h3 style="color: #10B981; text-align: center;">CONFIRMED ENCRYPTED PAYMENT (₹500 / 0.0003 BTC)</h3><br>
             <div style="background: #0F172A; padding: 30px; border-radius: 16px; border: 1px solid #334155;">
                <p style="font-size: 18px"><strong>PATIENT MATRIX:</strong> ${targetEmail}</p><hr style="border: 1px solid #1E293B; margin: 20px 0;">
-               <p style="font-size: 18px"><strong>SUPERVISING LEAD:</strong> ${app.doctor}</p>
-               <p style="font-size: 18px"><strong>GEOLOCATION:</strong> ${app.location}</p>
+               <p style="font-size: 18px"><strong>SUPERVISING LEAD:</strong> ${app.doctor_name}</p>
+               <p style="font-size: 18px"><strong>GEOLOCATION:</strong> ${app.hospital_branch}</p>
                <p style="font-size: 18px"><strong>DEPARTMENT:</strong> ${app.disease} Systems</p>
                <p style="font-size: 18px; color: #60A5FA;"><strong>TEMPORAL COORDINATES:</strong> ${payloadDate} @ ${payloadTime}</p>
             </div><br><p style="color: #64748B; text-align: center;">Maintain possession of this digital cipher upon arrival.</p></div>`);
@@ -530,8 +530,8 @@ const ConsultationNetwork = ({ userEmail }) => {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
              <div>
                 <p style={{ margin: 0, fontSize: "12px", color: THEME.success, fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px" }}>{app.disease} PROTOCOL</p>
-                <h3 style={{ margin: "8px 0 4px 0", fontSize: "24px", fontWeight: 800 }}>{app.doctor}</h3>
-                <p style={{ margin: 0, fontSize: "15px", color: THEME.muted, fontWeight: 600 }}>{app.location} • <span style={{color: "white"}}>{app.date} @ {app.time}</span></p>
+                <h3 style={{ margin: "8px 0 4px 0", fontSize: "24px", fontWeight: 800 }}>{app.doctor_name}</h3>
+                <p style={{ margin: 0, fontSize: "15px", color: THEME.muted, fontWeight: 600 }}>{app.hospital_branch} • <span style={{color: "white"}}>{app.scheduled_date} @ {app.scheduled_time}</span></p>
              </div>
              <div>
                {app.status === "pending" && <span style={{ background: "rgba(245, 158, 11, 0.15)", color: THEME.warning, padding: "12px 24px", borderRadius: "100px", fontSize: "12px", fontWeight: 800, letterSpacing: "1px" }}>AWAITING CLINICAL AUTH</span>}
