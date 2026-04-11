@@ -183,11 +183,12 @@ async def predict_disease(disease: str, req: PredictionRequest, bg: BackgroundTa
 
 @app.post("/appointments")
 async def create_appointment(req: AppointmentRequest):
-    new_app = req.dict()
+    new_app = req.model_dump()
     new_app["id"] = str(uuid.uuid4())[:8].upper()
     new_app["status"] = "pending"
     new_app["bookedAt"] = datetime.now().isoformat()
     await appointments_col.insert_one(new_app)
+    if "_id" in new_app: del new_app["_id"]
     return {"status": "success", "appointment": new_app}
 
 @app.get("/appointments")
@@ -219,11 +220,12 @@ async def init_medicines():
 
 @app.post("/api/pharma-order")
 async def create_order(req: OrderRequest):
-    order = req.dict()
-    order["id"] = f"VTX-{str(uuid.random_uuid())[:6].upper()}" if hasattr(uuid, 'random_uuid') else f"VTX-{str(uuid.uuid4())[:6].upper()}"
+    order = req.model_dump()
+    order["id"] = f"VTX-{str(uuid.uuid4())[:6].upper()}"
     order["status"] = "pending"
     order["timestamp"] = datetime.now().isoformat()
     await orders_col.insert_one(order)
+    if "_id" in order: del order["_id"]
     for item in req.items: await medicines_col.update_one({"id": item.id}, {"$inc": {"quantity": -item.cartQty}})
     return {"status": "success", "order": order}
 
@@ -245,7 +247,9 @@ async def get_restocks():
 
 @app.post("/api/restock-request")
 async def restock_request(req: RestockRequest):
-    r = req.dict(); r["id"] = str(uuid.uuid4())[:8].upper(); r["status"] = "pending"
+    r = req.model_dump()
+    r["id"] = str(uuid.uuid4())[:8].upper()
+    r["status"] = "pending"
     await restocks_col.insert_one(r)
     return {"status": "success"}
 
