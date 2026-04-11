@@ -6,7 +6,7 @@ certifi
 pymongo[srv]
 pandas
 numpy==1.26.4
-scikit-learn
+scikit-learn==1.4.2
 joblib
 python-dotenv
 pydantic[email]

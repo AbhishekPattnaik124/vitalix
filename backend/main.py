@@ -43,12 +43,22 @@ import certifi
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/vitalix")
 logger.info(f"Connecting to MongoDB: {MONGO_URI[:30]}...")
 
-client = AsyncIOMotorClient(
-    MONGO_URI,
-    tls=True,
-    tlsCAFile=certifi.where(),
-    serverSelectionTimeoutMS=10000
-)
+if sys.version_info >= (3, 13):
+    logger.info(f"Python {sys.version_info.major}.{sys.version_info.minor} detected - using Hardened TLS workaround")
+    client = AsyncIOMotorClient(
+        MONGO_URI,
+        tls=True,
+        tlsAllowInvalidCertificates=True,
+        tlsAllowInvalidHostnames=True,
+        serverSelectionTimeoutMS=20000
+    )
+else:
+    client = AsyncIOMotorClient(
+        MONGO_URI,
+        tls=True,
+        tlsCAFile=certifi.where(),
+        serverSelectionTimeoutMS=20000
+    )
 db = client.vitalix
 
 # Collections
