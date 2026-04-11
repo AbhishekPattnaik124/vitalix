@@ -1,0 +1,21 @@
+# Node.js
+node_modules/
+dist/
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+.env
+
+# Models & Data
+backend/appointments.json
+backend/models/*.pkl
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,32 @@
+=========================================
+HEALTH_AI ENTERPRISE DOCTOR CREDENTIALS
+-----------------------------------------
+SECURITY CLEARANCE WARNING: 
+These accounts are restricted to Clinical Staff and System Admins.
+DO NOT expose these to corporate or patient-level users.
+=========================================
+
+[ SYSTEM ADMINISTRATION ]
+Email: admin@vitalix.com
+Password: admin123
+Role: admin
+
+[ CLINICAL WORKBENCH DOCTORS ]
+
+1. Dr. Alice Chen (Cardiology & Heart Disease Specialist)
+Email: alice.chen@healthai.com
+Password: cardio2026
+
+2. Dr. Rajesh Kumar (Haematology & Blood Diagnostics)
+Email: r.kumar@healthai.com
+Password: blood2026
+
+3. Dr. Emily Thorne (Neurology & Brain Stroke Risk)
+Email: emily.thorne@healthai.com
+Password: neuro2026
+
+-----------------------------------------
+Notes on Authorization Gateway:
+- Admin routes strictly validate against the system admin credentials.
+- Clinical routes strictly validate against the Doctor array logic.
+- Patient gateways will currently accept any validly structured corporate email for demo purposes.
