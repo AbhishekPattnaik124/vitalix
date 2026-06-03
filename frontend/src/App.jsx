@@ -160,8 +160,8 @@ const diseases = [
   { id: "pneumonia", name: "Pneumonia", color: "#38BDF8", icon: <ImageIcon size={28} />, desc: "Detailed airway opacity and fluid detection.", imgReq: "Upload Chest X-Ray Scan" }
 ];
 
-const API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" 
-  ? "http://localhost:8000" 
+const API_BASE_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+  ? "http://localhost:8000"
   : "https://vitalix-xy2r.onrender.com";
 
 const DOCTOR_ACCOUNTS = [
