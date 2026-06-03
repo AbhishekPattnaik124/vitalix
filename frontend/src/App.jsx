@@ -56,11 +56,6 @@ const GlobalStyles = () => (
       100% { transform: translateY(0px) rotate(0deg); }
     }
 
-    @keyframes shimmer {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
-    }
-    
     .glass-panel {
       background: rgba(15, 23, 42, 0.6);
       backdrop-filter: blur(24px) saturate(180%);
@@ -68,23 +63,20 @@ const GlobalStyles = () => (
       border: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
     }
-    
+
     .shimmer-text {
-      background: linear-gradient(90deg, #fff, #94a3b8, #fff);
-      background-size: 200% auto;
-      color: transparent;
-      -webkit-background-clip: text;
-      animation: shimmer 3s linear infinite;
+      color: #FFFFFF;
+      background: none;
+      -webkit-background-clip: unset;
     }
   `}</style>
 );
 
 const CinematicBackground = () => (
   <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", overflow: "hidden", zIndex: -1, background: "#020617" }}>
-      <div style={{ position: "absolute", top: "-20%", left: "-10%", width: "70vw", height: "70vw", background: "radial-gradient(circle, rgba(59,130,246,0.1) 0%, rgba(0,0,0,0) 60%)", filter: "blur(60px)", animation: "float 20s infinite alternate ease-in-out", willChange: "transform" }} />
-      <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: "80vw", height: "80vw", background: "radial-gradient(circle, rgba(139,92,246,0.08) 0%, rgba(0,0,0,0) 60%)", filter: "blur(80px)", animation: "float 25s infinite alternate-reverse ease-in-out", willChange: "transform" }} />
-      <div style={{ position: "absolute", top: "30%", left: "40%", width: "50vw", height: "50vw", background: "radial-gradient(circle, rgba(16,185,129,0.06) 0%, rgba(0,0,0,0) 70%)", filter: "blur(60px)", animation: "float 18s infinite alternate ease-in-out", willChange: "transform" }} />
-      {/* Mesh grid overlay - Performance Optimized */}
+      <div style={{ position: "absolute", top: "-20%", left: "-10%", width: "70vw", height: "70vw", background: "radial-gradient(circle, rgba(59,130,246,0.1) 0%, rgba(0,0,0,0) 60%)", filter: "blur(60px)" }} />
+      <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: "80vw", height: "80vw", background: "radial-gradient(circle, rgba(139,92,246,0.08) 0%, rgba(0,0,0,0) 60%)", filter: "blur(80px)" }} />
+      <div style={{ position: "absolute", top: "30%", left: "40%", width: "50vw", height: "50vw", background: "radial-gradient(circle, rgba(16,185,129,0.06) 0%, rgba(0,0,0,0) 70%)", filter: "blur(60px)" }} />
       <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundImage: "linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.01) 1px, transparent 1px)", backgroundSize: "80px 80px", opacity: 0.5 }} />
   </div>
 );
@@ -95,7 +87,7 @@ const Card = ({ children, style = {}, onClick }) => (
     whileHover={onClick ? { scale: 1.02, y: -5, boxShadow: `0 30px 60px rgba(0,0,0,0.5), 0 0 20px ${THEME.accentGlow}` } : {}}
     onClick={onClick}
     className="glass-panel"
-    style={{ borderRadius: "24px", padding: "32px", cursor: onClick ? "pointer" : "default", transition: "box-shadow 0.3s ease", ...style }}
+    style={{ borderRadius: "24px", padding: "32px", cursor: onClick ? "pointer" : "default", ...style }}
   >
     {children}
   </motion.div>
@@ -122,6 +114,30 @@ const Button = ({ children, onClick, variant = "primary", style = {}, disabled =
   );
 };
 
+const NotificationModal = ({ modal, setModal }) => {
+  if (!modal) return null;
+  const isError = modal.type === "error";
+  const isSuccess = modal.type === "success";
+  const isWarning = modal.type === "warning";
+  
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
+                style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.85)", backdropFilter: "blur(12px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, padding: "20px" }}
+                onClick={() => setModal(null)}>
+      <motion.div initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 30 }}
+                  style={{ width: "100%", maxWidth: "500px", background: "rgba(10, 15, 30, 0.95)", border: `1px solid ${isError ? THEME.danger : isSuccess ? THEME.success : isWarning ? THEME.warning : THEME.border}`, borderRadius: "32px", padding: "48px 40px", textAlign: "center", boxShadow: `0 40px 80px rgba(0,0,0,0.6), 0 0 40px ${isError ? THEME.danger + "30" : isSuccess ? THEME.success + "30" : "rgba(0,0,0,0)"}` }}
+                  onClick={e => e.stopPropagation()}>
+        <div style={{ background: isError ? THEME.danger + "15" : isSuccess ? THEME.success + "15" : "rgba(255,255,255,0.05)", padding: "30px", borderRadius: "50%", display: "inline-flex", marginBottom: "24px", color: isError ? THEME.danger : isSuccess ? THEME.success : isWarning ? THEME.warning : THEME.accent }}>
+           {isError ? <AlertTriangle size={54} /> : isSuccess ? <CheckCircle size={54} /> : isWarning ? <AlertOctagon size={54} /> : <Bell size={54} />}
+        </div>
+        <h2 style={{ fontSize: "32px", fontWeight: 800, color: "white", marginBottom: "16px", letterSpacing: "-1px" }}>{modal.title || "Mainframe Signal"}</h2>
+        <p style={{ color: THEME.muted, fontSize: "17px", marginBottom: "32px", lineHeight: 1.6, whiteSpace: "pre-line", fontWeight: 500 }}>{modal.message}</p>
+        <Button onClick={() => setModal(null)} style={{ width: "100%", padding: "18px", fontSize: "16px" }}>Acknowledge Sequence</Button>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 /* =======================================
    DISEASES METADATA & AI DOCTORS
 ======================================= */
@@ -144,12 +160,14 @@ const diseases = [
   { id: "pneumonia", name: "Pneumonia", color: "#38BDF8", icon: <ImageIcon size={28} />, desc: "Detailed airway opacity and fluid detection.", imgReq: "Upload Chest X-Ray Scan" }
 ];
 
-const API_BASE_URL = "https://vitalix-xy2r.onrender.com";
+const API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" 
+  ? "http://localhost:8000" 
+  : "https://vitalix-xy2r.onrender.com";
 
 const DOCTOR_ACCOUNTS = [
-  { email: "alice.chen@vitalix.com", pass: "cardio2026", name: "Dr. Alice Chen", loc: "City Central Clinic" },
-  { email: "r.kumar@vitalix.com", pass: "blood2026", name: "Dr. Rajesh Kumar", loc: "Global Health Institute" },
-  { email: "emily.thorne@vitalix.com", pass: "neuro2026", name: "Dr. Emily Thorne", loc: "Westside Speciality" }
+  { email: "alice.chen@vitalix.com", pass: "cardio2026", name: "Dr. Alice Chen", loc: "City Central Clinic", spec: "heart" },
+  { email: "r.kumar@vitalix.com", pass: "blood2026", name: "Dr. Rajesh Kumar", loc: "Global Health Institute", spec: "diabetes" },
+  { email: "emily.thorne@vitalix.com", pass: "neuro2026", name: "Dr. Emily Thorne", loc: "Westside Speciality", spec: "brain" }
 ];
 
 /* =======================================
@@ -180,7 +198,7 @@ const DashboardLayout = ({ children, screen, setScreen, userEmail, userRole, use
   return (
     <div style={{ display: "flex", width: "100%", height: "100vh", position: "relative" }}>
       <CinematicBackground />
-      <motion.div initial={{ x: -300 }} animate={{ x: 0 }} transition={{ type: "spring", stiffness: 80 }} 
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} 
            style={{ width: "280px", background: "rgba(10, 15, 30, 0.7)", backdropFilter: "blur(40px)", borderRight: `1px solid ${THEME.border}`, display: "flex", flexDirection: "column", flexShrink: 0, zIndex: 10 }}>
         <div style={{ padding: "40px 24px", display: "flex", alignItems: "center", gap: "16px" }}>
           <img src="/logo.png" alt="Vitalix" style={{ width: "44px", height: "44px", borderRadius: "12px", objectFit: "cover", boxShadow: `0 0 25px ${THEME.accentGlow}` }} />
@@ -189,7 +207,7 @@ const DashboardLayout = ({ children, screen, setScreen, userEmail, userRole, use
         <nav style={{ flex: 1, padding: "0 20px", overflowY: "auto" }}>
           <p style={{ fontSize: "11px", fontWeight: 700, color: THEME.muted, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "20px", paddingLeft: "8px" }}>Interface</p>
           {navItems.map(item => (
-            <motion.div key={item.id} whileHover={{ x: 5, background: "rgba(255,255,255,0.05)" }} onClick={() => setScreen(item.id)} 
+            <motion.div key={item.id} whileHover={{ y: 0, background: "rgba(255,255,255,0.05)" }} onClick={() => setScreen(item.id)} 
                style={{ display: "flex", alignItems: "center", gap: "16px", padding: "16px 20px", borderRadius: "12px", cursor: "pointer", marginBottom: "8px", background: screen === item.id ? "rgba(59, 130, 246, 0.15)" : "transparent", color: screen === item.id ? "#FFF" : THEME.muted, fontWeight: screen === item.id ? 800 : 500, border: screen === item.id ? `1px solid rgba(59, 130, 246, 0.3)` : "1px solid transparent", transition: "all 0.2s" }}>
                <item.icon size={20} color={screen === item.id ? "#60A5FA" : "currentColor"} />
                <span style={{ fontSize: "15px", letterSpacing: "0.5px" }}>{item.label}</span>
@@ -307,7 +325,7 @@ const DashboardWidgets = ({ userEmail }) => {
   );
 };
 
-const PredictionForm = ({ disease, onBack, userEmail }) => {
+const PredictionForm = ({ disease, onBack, userEmail, setModal }) => {
   const [result, setResult] = useState("");
   const [confidence, setConfidence] = useState(0);
   const [shapVals, setShapVals] = useState([]);
@@ -316,25 +334,47 @@ const PredictionForm = ({ disease, onBack, userEmail }) => {
   const [aptTime, setAptTime] = useState("");
   const [selDoc, setSelDoc] = useState(0);
 
-  const localDocs = DOCTOR_ACCOUNTS.sort(() => 0.5 - Math.random()).slice(0, 2);
+  const matchingDocs = DOCTOR_ACCOUNTS.filter(d => d.spec === disease.id);
+  const localDocs = matchingDocs.length > 0 ? matchingDocs : DOCTOR_ACCOUNTS.sort(() => 0.5 - Math.random()).slice(0, 2);
 
-  const predict = () => { 
+  const predict = async () => { 
+    const inputFields = document.querySelectorAll('.diagnostic-input');
+    const inputs = Array.from(inputFields).map(i => parseFloat(i.value) || 0);
+
+    if (inputs.length === 0 && !disease.imgReq) {
+        return setModal({ title: "Data Matrix Empty", message: "Please input physiological metrics before executing diagnostics.", type: "warning" });
+    }
+
     setExtracting(true); 
-    setTimeout(() => { 
-      const isRisk = Math.random() > 0.4;
-      setResult(isRisk ? "INDICATORS_FOUND" : "CLEAR"); 
-      const conf = isRisk ? Math.floor(Math.random() * 20) + 75 : Math.floor(Math.random() * 10) + 90;
-      setConfidence(conf);
-      if(isRisk) {
-         if(disease.fields) setShapVals(disease.fields.slice(0,3).map(f => ({ name: f, val: Math.floor(Math.random()*30)+15 })));
-         else setShapVals([{name: "Pixel Density Anomaly", val: 45}, {name: "Edge Boundary Structure", val: 32}]);
-      }
-      setExtracting(false); 
-    }, 2500); 
+    try {
+        const res = await fetch(`${API_BASE_URL}/predict/${disease.id}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: userEmail, data: inputs })
+        });
+        const data = await res.json();
+        
+        const isRisk = data.result === 1;
+        setResult(isRisk ? "INDICATORS_FOUND" : "CLEAR"); 
+        
+        const conf = isRisk ? Math.floor(Math.random() * 15) + 80 : Math.floor(Math.random() * 8) + 92;
+        setConfidence(conf);
+        
+        if(isRisk) {
+           if(disease.fields) setShapVals(disease.fields.slice(0,3).map(f => ({ name: f, val: Math.floor(Math.random()*25)+20 })));
+           else setShapVals([{name: "Pixel Density Anomaly", val: 45}, {name: "Edge Boundary Structure", val: 32}]);
+        }
+    } catch (e) {
+        setModal({ title: "Mainframe Link Error", message: "Failed to communicate with diagnostic neural nets. Fallback to local simulation.", type: "error" });
+        // Fallback random for demo robustness
+        setResult(Math.random() > 0.5 ? "INDICATORS_FOUND" : "CLEAR");
+        setConfidence(88);
+    }
+    setExtracting(false); 
   };
   
   const bookApt = async () => {
-      if(!aptDate || !aptTime) return alert("System Requires a localized Time & Date matrix to lock appointment.");
+      if(!aptDate || !aptTime) return setModal({ title: "Incomplete Matrix", message: "System requires a localized Time & Date matrix to lock appointment.", type: "warning" });
       try {
           const res = await fetch(`${API_BASE_URL}/appointments`, {
               method: "POST",
@@ -350,10 +390,10 @@ const PredictionForm = ({ disease, onBack, userEmail }) => {
               })
           });
           if(res.ok) {
-              alert("Quantum Request Dispatched to Vitalix Mainframe. Awaiting medical authorization.");
+              setModal({ title: "Request Dispatched", message: "Quantum Request Dispatched to Vitalix Mainframe. Awaiting medical authorization.", type: "success" });
               onBack();
           }
-      } catch (e) { alert("Mainframe connection error."); }
+      } catch (e) { setModal({ title: "Connection Error", message: "Mainframe connection severed early.", type: "error" }); }
   };
 
   const dlReport = () => {
@@ -398,11 +438,11 @@ const PredictionForm = ({ disease, onBack, userEmail }) => {
                   <h4 style={{ margin: "0 0 4px 0", fontWeight: 800, fontSize: "18px" }}>Auto-Matrix Mapping</h4>
                   <p style={{ fontSize:"13px", color: THEME.muted, margin:0, fontWeight: 500 }}>Bypass manual input by providing a PDF clinic report.</p>
                 </div>
-                <input type="file" id="report-upload" style={{ display: "none" }} onChange={()=>{setExtracting(true); setTimeout(()=>{setExtracting(false); alert('OCR EXTRACT COMPLETE. ⚠️ Severe metrics detected in document bounds.'); predict();}, 2000)}} accept=".pdf,.png" />
+                <input type="file" id="report-upload" style={{ display: "none" }} onChange={()=>{setExtracting(true); setTimeout(()=>{setExtracting(false); setModal({ title: "OCR EXTRACT COMPLETE", message: "⚠️ Severe metrics detected in document bounds. Diagnostics initialized.", type: "warning" }); predict();}, 2000)}} accept=".pdf,.png" />
                 <Button onClick={(e) => { if(extracting) e.preventDefault(); else document.getElementById("report-upload").click(); }}>{extracting ? "Syncing..." : "Upload PDF"}</Button>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
-                {disease.fields?.map(f => (<div key={f}><label style={{ display: "block", fontSize: "12px", letterSpacing: "1px", textTransform: "uppercase", fontWeight: 800, color: THEME.muted, marginBottom: "10px" }}>{f}</label><input type="number" placeholder="Input Value" style={{ width: "100%", padding: "16px", borderRadius: "12px", border: `1px solid rgba(255,255,255,0.2)`, background: "rgba(0,0,0,0.5)", color: "white", fontSize: "16px", fontWeight: 600, transition: "all 0.3s" }} /></div>))}
+                {disease.fields?.map(f => (<div key={f}><label style={{ display: "block", fontSize: "12px", letterSpacing: "1px", textTransform: "uppercase", fontWeight: 800, color: THEME.muted, marginBottom: "10px" }}>{f}</label><input type="number" className="diagnostic-input" placeholder="Input Value" style={{ width: "100%", padding: "16px", borderRadius: "12px", border: `1px solid rgba(255,255,255,0.2)`, background: "rgba(0,0,0,0.5)", color: "white", fontSize: "16px", fontWeight: 600, transition: "all 0.3s" }} /></div>))}
               </div>
               <Button onClick={predict} disabled={extracting} style={{ width: "100%", padding: "20px", marginTop: "40px", fontSize: "18px" }}>{extracting ? "Processing Deep Neural Net..." : "Execute Diagnostics"}</Button>
             </>
@@ -484,7 +524,12 @@ const ConsultationNetwork = ({ userEmail }) => {
             const res = await fetch(`${API_BASE_URL}/appointments/${app.id}/status`, {
                 method: "PUT",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ status: "accepted", paymentStatus: "paid", date: app.scheduled_date, time: app.scheduled_time })
+                body: JSON.stringify({ 
+                    status: "accepted", 
+                    paymentStatus: "paid", 
+                    date: (app.scheduled_date && app.scheduled_date !== "Pending Schedule") ? app.scheduled_date : "TBD", 
+                    time: (app.scheduled_time && app.scheduled_time !== "TBD") ? app.scheduled_time : "TBD" 
+                })
             });
             
             if(res.ok) {
@@ -505,14 +550,21 @@ const ConsultationNetwork = ({ userEmail }) => {
                     emailSent = emailRes.ok;
                 } catch (err) { emailSent = false; }
 
-                alert(`TRANSACTION AUTHENTICATED [GATEWAY: ${gateway.toUpperCase()}]\n\n${emailSent ? "SUCCESS: Clinical Ticket transmitted to your neural mailbox." : "WARNING: SMTP Relay offline. Download your ticket manually below."}`);
+                setModal({ 
+                    title: "Transaction Authenticated", 
+                    message: `[GATEWAY: ${gateway.toUpperCase()}]\n\n${emailSent ? "SUCCESS: Clinical Ticket transmitted to your neural mailbox." : "WARNING: SMTP Relay offline. Download your ticket manually below."}`,
+                    type: emailSent ? "success" : "warning"
+                });
+                
+                // FORCE IMMEDIATE LOCAL REFRESH TO SHOW DOWNLOAD BUTTON
+                setApps(prev => prev.map(a => a.id === app.id ? { ...a, status: "accepted", paymentStatus: "paid" } : a));
                 
                 const resA = await fetch(`${API_BASE_URL}/appointments`);
                 const data = await resA.json();
                 setApps(data.filter(a => a.userEmail === userEmail));
                 setActiveCheckout(null);
             }
-        } catch(e) { alert("Matrix Financial Error: Connection to ledger severed."); }
+        } catch(e) { setModal({ title: "Financial Error", message: "Matrix Financial Error: Connection to ledger severed.", type: "error" }); }
         setPaying(false);
     };
 
@@ -560,7 +612,7 @@ const ConsultationNetwork = ({ userEmail }) => {
       {apps.length === 0 ? <Card><p style={{fontWeight:800, color:THEME.muted, textAlign:"center"}}>NO ACTIVE MISSIONS</p></Card> : (
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             {apps.slice().reverse().map((app, i) => (
-                <motion.div key={app.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i*0.1 }}>
+                <motion.div key={app.id} initial={{ opacity: 0, y: 0 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i*0.1 }}>
                     <Card style={{ padding: "30px", border: activeCheckout === app.id ? `1px solid ${THEME.accent}` : `1px solid ${THEME.border}` }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <div style={{ display: "flex", gap: "24px", alignItems: "center" }}>
@@ -568,7 +620,7 @@ const ConsultationNetwork = ({ userEmail }) => {
                             <div>
                                 <p style={{ margin: 0, fontSize: "12px", color: THEME.success, fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px" }}>{app.disease} PROTOCOL</p>
                                 <h3 style={{ margin: "4px 0", fontSize: "22px", fontWeight: 800, color: "white" }}>{app.doctor_name}</h3>
-                                <p style={{ margin: 0, fontSize: "14px", color: THEME.muted, fontWeight: 600 }}>{app.hospital_branch} • <span style={{color: THEME.accent}}>{app.scheduled_date || "Pending"} @ {app.scheduled_time || "TBD"}</span></p>
+                                <p style={{ margin: 0, fontSize: "14px", color: THEME.muted, fontWeight: 600 }}>{app.hospital_branch} • <span style={{color: THEME.accent}}>{(app.scheduled_date && app.scheduled_date !== "Pending Schedule") ? app.scheduled_date : "Schedule Pending"} @ {app.scheduled_time || "TBD"}</span></p>
                             </div>
                         </div>
                         <div style={{ textAlign: "right" }}>
@@ -617,8 +669,12 @@ const ConsultationNetwork = ({ userEmail }) => {
     );
 };
 
-const ClinicalWorkbench = () => {
+const ClinicalWorkbench = ({ setModal }) => {
     const [requests, setRequests] = useState([]);
+    const [selId, setSelId] = useState(null);
+    const [date, setDate] = useState("");
+    const [time, setTime] = useState("");
+
     const sync = async () => {
         const res = await fetch(`${API_BASE_URL}/appointments`);
         setRequests(await res.json());
@@ -626,16 +682,19 @@ const ClinicalWorkbench = () => {
     useEffect(() => { sync(); }, []);
     
     const approve = async (id) => {
+        if(!date || !time) return setModal({ title: "Schedule Required", message: "Clinical authorization requires an active time/date slot.", type: "warning" });
         await fetch(`${API_BASE_URL}/appointments/${id}/status`, {
             method: "PUT",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({ 
                 status: "accepted", 
                 paymentStatus: "unpaid",
-                date: "Pending Schedule",
-                time: "TBD" 
+                date: date,
+                time: time 
             })
         });
+        setModal({ title: "Clearance Granted", message: "Clinical encounter scheduled and ledger updated.", type: "success" });
+        setSelId(null);
         sync();
     };
 
@@ -645,14 +704,28 @@ const ClinicalWorkbench = () => {
        <p style={{ color: THEME.muted, fontWeight: 500, fontSize:"16px", marginBottom: "40px" }}>Verify incoming patient anomaly escalations.</p>
        {requests.length === 0 ? <Card><p style={{color: THEME.muted, fontWeight: 800, textAlign: "center"}}>Zero escalations queued.</p></Card> : requests.map((req, i) => (
           <motion.div key={req.id} initial={{opacity:0, scale:0.95}} animate={{opacity:1, scale:1}} transition={{delay:i*0.1}}>
-          <Card style={{ marginBottom: "20px" }}>
+          <Card style={{ marginBottom: "20px", border: selId === req.id ? `1px solid ${THEME.success}` : `1px solid ${THEME.border}` }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                <div>
                   <h3 style={{ margin: "0 0 8px 0", fontSize: "20px", fontWeight: 800, color: "white" }}>TARGET: {req.disease} Diagnostics</h3>
-                  <p style={{ margin: 0, fontSize: "14px", color: THEME.muted, fontWeight: 600 }}>T-Minus: {req.date} at {req.time} • Assigned ID: {req.doctor_name}</p>
+                  <p style={{ margin: 0, fontSize: "14px", color: THEME.muted, fontWeight: 600 }}>T-Minus: {req.date || "TBD"} at {req.time || "TBD"} • Assigned ID: {req.doctor_name}</p>
                </div>
                <div>
-                 {req.status === "pending" ? <Button style={{background:THEME.success}} onClick={() => approve(req.id)}>APPROVE TRANSFER</Button> : <span style={{ color: "white", fontWeight: 800, background:"rgba(255,255,255,0.1)", padding:"12px 20px", borderRadius:"8px" }}>AUTHORIZATION GRANTED</span>}
+                 {req.status === "pending" ? (
+                     selId === req.id ? (
+                        <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                           <input type="date" value={date} onChange={e=>setDate(e.target.value)} style={{ padding: "10px", borderRadius: "10px", background: "rgba(0,0,0,0.5)", color: "white", border: `1px solid ${THEME.border}`, fontSize: "12px" }} />
+                           <input type="time" value={time} onChange={e=>setTime(e.target.value)} style={{ padding: "10px", borderRadius: "10px", background: "rgba(0,0,0,0.5)", color: "white", border: `1px solid ${THEME.border}`, fontSize: "12px" }} />
+                           <Button style={{background:THEME.success}} onClick={() => approve(req.id)}>CONFIRM</Button>
+                           <Button variant="outline" onClick={() => setSelId(null)}>CANCEL</Button>
+                        </div>
+                     ) : <Button style={{background:THEME.success}} onClick={() => setSelId(req.id)}>APPROVE TRANSFER</Button>
+                 ) : (
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <div style={{ color: THEME.success, fontWeight: 800, fontSize: "12px", background: "rgba(16,185,129,0.1)", padding: "10px 20px", borderRadius: "8px", border: `1px solid ${THEME.success}30` }}>AUTHORIZATION GRANTED</div>
+                        <span style={{ fontSize: "13px", color: THEME.muted, fontWeight: 600 }}>{req.scheduled_date} @ {req.scheduled_time}</span>
+                    </div>
+                 )}
                </div>
             </div>
           </Card>
@@ -683,7 +756,7 @@ const SystemAdminDashboard = () => {
 
     const approveRestock = async (req) => {
         await fetch(`${API_BASE_URL}/api/approve-restock/${req.id}`, { method: "POST" });
-        alert(`GLOBAL LOGISTICS OVERRIDE: 50 units of ${req.medName} deployed to active pharmacy grid.`);
+        setModal({ title: "Logistics Override", message: `GLOBAL LOGISTICS OVERRIDE: 50 units of ${req.medName} deployed to active pharmacy grid.`, type: "success" });
         sync();
     };
 
@@ -694,7 +767,7 @@ const SystemAdminDashboard = () => {
             headers: {'Content-Type': 'application/json'}, 
             body: JSON.stringify({ email: tgt.email, order_id: tgt.id, total: tgt.total }) 
         });
-        alert("LOGISTICS COMMAND: Pharmaceutical order authorized and securely dispatched to patient payload.");
+        setModal({ title: "Order Dispatched", message: "LOGISTICS COMMAND: Pharmaceutical order authorized and securely dispatched to patient payload.", type: "success" });
         sync();
     };
 
@@ -814,7 +887,7 @@ const SystemAdminDashboard = () => {
                          <tr key={a.id} style={{ borderTop: `1px solid rgba(255,255,255,0.05)` }}>
                             <td style={{ padding: "16px", fontSize: "14px", color: "white", fontFamily: "monospace" }}>#{a.id}</td>
                             <td style={{ padding: "16px", fontSize: "14px", color: "white", fontWeight: 600 }}>{a.disease}</td>
-                            <td style={{ padding: "16px", fontSize: "14px", color: THEME.muted }}>{a.doctor}</td>
+                            <td style={{ padding: "16px", fontSize: "14px", color: THEME.muted }}>{a.doctor_name}</td>
                             <td style={{ padding: "16px", fontSize: "13px", fontWeight: 800, color: a.status === 'pending' ? THEME.warning : THEME.success }}>{a.status === 'pending' ? 'PENDING' : 'APPROVED'}</td>
                             <td style={{ padding: "16px", fontSize: "13px", fontWeight: 800, color: a.paymentStatus === 'paid' ? THEME.success : THEME.danger }}>{a.paymentStatus === 'paid' ? 'SETTLED (₹500)' : 'UNPAID ESCROW'}</td>
                          </tr>
@@ -845,9 +918,9 @@ const QuantumPharmacy = ({ userEmail }) => {
     }, []);
 
     const addToCart = (med) => {
-        if(med.quantity <= 0) return alert("Depleted Inventory Component.");
+        if(med.quantity <= 0) return setModal({ title: "Depleted Node", message: "Depleted Inventory Component. Restock manual override required.", type: "error" });
         const existing = cart.find(c => c.id === med.id);
-        if(existing && existing.cartQty >= med.quantity) return alert("Maximum geometric quantity reached.");
+        if(existing && existing.cartQty >= med.quantity) return setModal({ title: "Limit Exceeded", message: "Maximum geometric quantity reached for this pharmaceutical node.", type: "warning" });
         setCart(existing ? cart.map(c => c.id === med.id ? {...c, cartQty: c.cartQty + 1} : c) : [...cart, {...med, cartQty: 1}]);
     };
 
@@ -858,8 +931,8 @@ const QuantumPharmacy = ({ userEmail }) => {
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({ medId: med.id, medName: med.name, userEmail: userEmail })
             });
-            if(res.ok) alert(`ESCALATION LOGGED.\nAdmin has been notified to procure global inventory for ${med.name}.`);
-        } catch (e) { alert("Matrix Escalation Failure."); }
+            if(res.ok) setModal({ title: "Escalation Logged", message: `Admin has been notified to procure global inventory for ${med.name}.`, type: "success" });
+        } catch (e) { setModal({ title: "Escalation Failure", message: "Matrix Escalation Failure. Internal signal lost.", type: "error" }); }
     };
 
     const processOrder = async () => {
@@ -872,12 +945,16 @@ const QuantumPharmacy = ({ userEmail }) => {
             });
             if(res.ok) {
                 setCart([]); setCheckout(false);
-                alert(`ENCRYPTED TRANSACTION CLEARED.\n₹${netTotal} successfully processed via ${gateway.toUpperCase()} Gateway. Pharmaceuticals dispatched to logistics queue.`);
+                setModal({ 
+                    title: "Transaction Cleared", 
+                    message: `₹${netTotal} successfully processed via ${gateway.toUpperCase()} Gateway.\nPharmaceuticals dispatched to logistics queue.`,
+                    type: "success"
+                });
                 // Refresh meds
                 const resM = await fetch(`${API_BASE_URL}/api/medicines`);
                 setMeds(await resM.json());
             }
-        } catch (e) { alert("Transaction Gateway Unreachable."); }
+        } catch (e) { setModal({ title: "Gateway Error", message: "Transaction Gateway Unreachable. Check neural link.", type: "error" }); }
     };
 
     return (
@@ -887,7 +964,7 @@ const QuantumPharmacy = ({ userEmail }) => {
                    <h1 className="shimmer-text" style={{ fontSize: "40px", fontWeight: 800, margin: "0 0 12px 0" }}>Quantum Pharmacy</h1>
                    <p style={{ color: THEME.muted, fontWeight: 500, fontSize:"16px", margin:0 }}>Automated biopharmaceutical dispensary network.</p>
                 </div>
-                <Button onClick={() => cart.length > 0 ? setCheckout(true) : alert('Cart Matrix Empty')} style={{ gap: "10px" }}><Pill size={18}/> Secure Checkout ({cart.reduce((a,c)=>a+c.cartQty,0)} units)</Button>
+                <Button onClick={() => cart.length > 0 ? setCheckout(true) : setModal({ title: "Cart Matrix Empty", message: "Inject pharmaceutical nodes before initializing checkout sequence.", type: "warning" })} style={{ gap: "10px" }}><Pill size={18}/> Secure Checkout ({cart.reduce((a,c)=>a+c.cartQty,0)} units)</Button>
             </div>
 
             {checkout ? (
@@ -906,7 +983,7 @@ const QuantumPharmacy = ({ userEmail }) => {
                    </div>
                    <div style={{ display: "flex", gap: "20px" }}>
                       <Button variant="outline" onClick={() => setCheckout(false)} style={{ flex: 1, color: "white" }}>Abort Sequence</Button>
-                      <Button onClick={processOrder} style={{ flex: 2, background: THEME.success }}>Authorize Transfer</Button>
+                      <Button onClick={processOrder} style={{ flex: 1, background: THEME.success }}>Authorize Transfer</Button>
                    </div>
                 </Card>
             ) : (
@@ -953,7 +1030,7 @@ const GenomicAnalytics = ({ userEmail }) => {
                  <div style={{ padding: "30px" }}>
                     <p style={{ color: THEME.muted, fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 20px 0" }}>OVERALL HEALTH SCORE</p>
                     <div style={{ width: "200px", height: "200px", borderRadius: "50%", background: `conic-gradient(${THEME.success} 0% 88%, rgba(255,255,255,0.05) 88% 100%)`, margin: "0 auto", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                       <div style={{ width: "160px", height: "160px", background: THEME.bg, borderRadius: "50%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                       <div style={{ width: "160px", height: "160px", background: THEME.background, borderRadius: "50%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                           <span style={{ fontSize: "48px", fontWeight: 800, color: "white", lineHeight: 1 }}>88</span>
                           <span style={{ fontSize: "14px", fontWeight: 800, letterSpacing: "1px", color: THEME.success }}>TIER 1 VITALITY</span>
                        </div>
@@ -987,10 +1064,10 @@ const GenomicAnalytics = ({ userEmail }) => {
                    {[{n: "Fatigue Levels", v: 24}, {n: "Glucose Variability", v: 12}, {n: "Cellular Anomalies", v: 45}].map((symp, i) => (
                        <div key={i} style={{ background: "rgba(0,0,0,0.3)", padding: "20px", borderRadius: "16px", border: `1px solid ${THEME.border}` }}>
                           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", color: "white", fontWeight: 800 }}>
-                              <span>{symp.n}</span><span style={{color: symp.v > 40 ? THEME.danger : THEME.accent}}>{symp.v}% Anomaly Spread</span>
+                              <span>{symp.n}</span><span style={{color: symp.v > 40 ? THEME.danger : "#60A5FA"}}>{symp.v}% Anomaly Spread</span>
                           </div>
                           <div style={{ width: "100%", height: "8px", background: "rgba(255,255,255,0.05)", borderRadius: "100px", overflow: "hidden" }}>
-                              <motion.div initial={{ width: 0 }} animate={{ width: `${symp.v}%` }} transition={{ duration: 1.2, delay: 0.5 + (i*0.2) }} style={{ width: "100%", height: "100%", background: symp.v > 40 ? THEME.danger : THEME.accent }} />
+                              <motion.div initial={{ width: 0 }} animate={{ width: `${symp.v}%` }} transition={{ duration: 1.2, delay: 0.5 + (i*0.2) }} style={{ height: "100%", background: symp.v > 40 ? THEME.danger : "#60A5FA" }} />
                           </div>
                        </div>
                    ))}
@@ -1006,22 +1083,50 @@ const AISymptomNavigator = ({ setScreen }) => {
 
     const checkSymptoms = () => {
         if (!symptom) return;
-        const low = symptom.toLowerCase();
-        let target = "";
+        const low = symptom.toLowerCase().trim();
         
-        // Context-aware keyword extraction
-        if (low.match(/heart|chest pain|breathless|palpitation/)) target = "heart";
-        else if (low.match(/diabet|sugar|insulin|glucose|thirsty/)) target = "diabetes";
-        else if (low.match(/leg pain|arm pain|joint|bone|fracture|knee|skel/)) target = "bone";
-        else if (low.match(/headache|dizzy|memory|confusion|brain/)) target = "brain";
-        else if (low.match(/skin|rash|itch|mole|spot/)) target = "skin";
-        else if (low.match(/cough|lung|breath/)) target = "lungs";
-        else if (low.match(/abdominal|stomach|liver|yellowing/)) target = "liver";
-        else if (low.match(/renal|kidney|urine color/)) target = "kidney";
-        else target = "all_screenings"; // Default to matrix
+        const keywords = {
+            heart: ["heart", "chest", "cardio", "palpitation", "breathless", "left arm", "left hand", "jaw pain", "sweating", "heavy chest", "tachycardia", "irregular heart beat"],
+            diabetes: ["diabet", "sugar", "insulin", "glucose", "thirsty", "blurred vision", "fatigue", "frequent urination", "polyuria", "slow healing", "tingling hands", "weight loss"],
+            bone: ["leg", "joint", "bone", "fracture", "knee", "skel", "walk", "stiff", "back pain", "swelling", "ortho", "shoulder", "hip", "wrist"],
+            brain: ["head", "dizzy", "memory", "brain", "stroke", "numb", "speech", "confusion", "neuro", "seizure", "paralysis", "migraine", "fainting"],
+            skin: ["skin", "rash", "itch", "spot", "mole", "melanoma", "burn", "dermatology", "acne", "psoriasis", "eczema", "blisters"],
+            lungs: ["cough", "lung", "breath", "asthma", "wheezing", "pneumonia", "respiratory", "bronchitis", "shortness of breath", "phlegm", "chest tightness"],
+            liver: ["stomach", "liver", "yellowing", "abdomen", "jaundice", "nausea", "hepatology", "digestive", "dark urine", "pale stool", "vomiting"],
+            kidney: ["kidney", "renal", "urine", "flank pain", "nephrology", "bladder", "lower abdomen", "pelvic", "blood in urine", "cloudy urine"],
+            malaria: ["fever", "chills", "malaria", "shaking", "headache", "muscle ache", "climbing body temperature", "tropical disease"],
+            pneumonia: ["chest congestion", "cough with yellow", "cough with green", "fever with chill", "struggling to breathe", "hacking cough", "crackling sound lungs"],
+            thyroid: ["weight gain", "weight loss thyroid", "hair loss", "neck swelling", "goiter", "iodine", "sensitivity to cold", "sensitivity to heat", "thyroiditis"]
+        };
 
-        const found = diseases.find(d => d.id === target) || diseases.find(d => d.id === "heart");
-        setResult(found);
+        const scores = Object.keys(keywords).map(key => {
+            let score = 0;
+            keywords[key].forEach(kw => {
+                if (low.includes(kw)) score += 1;
+            });
+            return { id: key, score };
+        });
+
+        // Get highest score
+        const best = scores.sort((a,b) => b.score - a.score)[0];
+        
+        // If highest score is 0, no specific match
+        let target = (best && best.score > 0) ? best.id : "all_screenings";
+
+        const found = diseases.find(d => d.id === target);
+        
+        if (found) {
+            setResult(found);
+        } else {
+            // If no match, suggest the most comprehensive division or general matrix
+            setResult({
+                id: "all_screenings",
+                name: "Full Diagnostic Matrix",
+                color: THEME.accent,
+                icon: <Scan size={28} />,
+                desc: "No specific symptom collision detected. Proceed to the full diagnostic grid for a granular assessment."
+            });
+        }
     };
 
     return (
@@ -1068,7 +1173,7 @@ const AuthLayout = ({ onLogin }) => {
     const [name, setName] = useState("");
 
     const handleAuth = async () => {
-        if (!email || !pass) return alert("System requires complete identity node arrays to proceed.");
+        if (!email || !pass) return setModal({ title: "Identification Required", message: "System requires complete identity node arrays to proceed.", type: "error" });
         
         if (isRegister) {
             try {
@@ -1078,13 +1183,13 @@ const AuthLayout = ({ onLogin }) => {
                     body: JSON.stringify({ email, password: pass, role, name })
                 });
                 if (res.ok) {
-                    alert("Identity Node Registered. Authorization sequence ready.");
+                    setModal({ title: "Identity Registered", message: "Identity Node Registered. Authorization sequence ready.", type: "success" });
                     setIsRegister(false);
                 } else {
                     const err = await res.json();
-                    alert(err.detail || "Registration Conflict.");
+                    setModal({ title: "Registration Conflict", message: err.detail || "Identity collision detected in registry.", type: "error" });
                 }
-            } catch (e) { console.error("Identity Registration Failure:", e); alert(`Network Matrix Interrupt: ${e.message || "Unknown error"}`); }
+            } catch (e) { setModal({ title: "Mainframe Error", message: `Network Matrix Interrupt: ${e.message}`, type: "error" }); }
             return;
         }
 
@@ -1097,16 +1202,16 @@ const AuthLayout = ({ onLogin }) => {
             if (res.ok) {
                 const data = await res.json();
                 onLogin(data.user.email, data.user.role, data.user.name);
-            } else { alert("Unauthorized identity detected. Verify Matrix Credentials."); }
-        } catch (e) { console.error("Mainframe Link Severed:", e); alert(`Mainframe Link Severed: ${e.message}`); }
+            } else { setModal({ title: "Access Denied", message: "Unauthorized identity detected. Verify Matrix Credentials.", type: "error" }); }
+        } catch (e) { setModal({ title: "Link Severed", message: `Mainframe Link Severed: ${e.message}`, type: "error" }); }
     };
 
     return (
     <div style={{ display: "flex", height: "100vh", backgroundColor: "#020617", color: "white", alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative" }}>
         <CinematicBackground />
         
-        <div style={{ position: "absolute", left: "10%", top: "50%", transform: "translateY(-50%)", width: "400px", zIndex: 2 }}>
-            <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.2 }}>
+        <div style={{ position: "absolute", left: "10%", top: "50%", transform: "translateY(-50%)", width: "400px", zIndey: 0 }}>
+            <motion.div initial={{ opacity: 0, y: 0 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "30px" }}>
                     <img src="/logo.png" alt="Vitalix" style={{ width: "70px", height: "70px", borderRadius: "16px", objectFit: "cover", boxShadow: `0 0 35px rgba(59, 130, 246, 0.4)` }} />
                     <span className="shimmer-text" style={{ fontSize: "36px", fontWeight: 800, letterSpacing: "-1px" }}>Vitalix OS</span>
@@ -1120,7 +1225,7 @@ const AuthLayout = ({ onLogin }) => {
             </motion.div>
         </div>
 
-        <motion.div initial={{ opacity: 0, x: 50, scale: 0.95 }} animate={{ opacity: 1, x: 0, scale: 1 }} transition={{ duration: 0.8, delay: 0.4 }} style={{ position: "absolute", right: "10%" }}>
+        <motion.div initial={{ opacity: 0, y: 0, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.8, delay: 0.4 }} style={{ position: "absolute", right: "10%" }}>
         <div className="glass-panel" style={{ width: "450px", padding: "50px 40px", borderRadius: "32px", display: "flex", flexDirection: "column", gap: "30px" }}>
            <div>
                <h2 style={{ fontSize: "32px", fontWeight: 800, color: "white", marginBottom: "8px" }}>Identity Link</h2>
@@ -1176,6 +1281,7 @@ export default function App() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("patient");
   const [name, setName] = useState("");
+  const [modal, setModal] = useState(null);
 
   useEffect(() => {
     if (sessionStorage.getItem("isLoggedIn") === "true") {
@@ -1200,16 +1306,16 @@ export default function App() {
       sessionStorage.setItem("userRole", r); 
       sessionStorage.setItem("loggedInEmail", e); 
       sessionStorage.setItem("userName", n || "");
-  }} /></>;
+  }} setModal={setModal} /></>;
 
   return (
     <>
       <GlobalStyles />
       <DashboardLayout screen={screen} setScreen={setScreen} userEmail={email} userRole={role} userName={name} handleLogout={handleLogout}>
         <AnimatePresence mode="wait">
-          <motion.div key={screen} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3, type: "tween", ease: "easeInOut" }}>
-            {role === "admin" && screen === "admin_dash" ? <SystemAdminDashboard /> : 
-             role === "doctor" && screen === "doctor_workbench" ? <ClinicalWorkbench /> :
+          <motion.div key={screen} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3, type: "tween", ease: "easeInOut" }}>
+            {role === "admin" && screen === "admin_dash" ? <SystemAdminDashboard setModal={setModal} /> : 
+             role === "doctor" && screen === "doctor_workbench" ? <ClinicalWorkbench setModal={setModal} /> :
               screen === "dashboard" ? <DashboardWidgets userEmail={email} /> :
               screen === "ai_symptom" ? <AISymptomNavigator setScreen={setScreen} /> :
               screen === "all_screenings" ? (
@@ -1228,13 +1334,17 @@ export default function App() {
                   ))}
                   </div>
               ) :
-              screen === "consultations" ? <ConsultationNetwork userEmail={email} /> :
-              screen === "pharmacy" ? <QuantumPharmacy userEmail={email} /> :
+              screen === "consultations" ? <ConsultationNetwork userEmail={email} setModal={setModal} /> :
+              screen === "pharmacy" ? <QuantumPharmacy userEmail={email} setModal={setModal} /> :
               screen === "analytics" ? <GenomicAnalytics userEmail={email} /> :
-              diseases.find(d => d.id === screen) ? <PredictionForm disease={diseases.find(d => d.id === screen)} onBack={() => setScreen("all_screenings")} userEmail={email} /> :
+              diseases.find(d => d.id === screen) ? <PredictionForm disease={diseases.find(d => d.id === screen)} onBack={() => setScreen("all_screenings")} userEmail={email} setModal={setModal} /> :
+
               <div style={{fontWeight: 800, color: THEME.muted, textAlign: "center", marginTop: "100px", fontSize: "24px"}}>UI MODULE UNDER CONSTRUCTION</div>
             }
           </motion.div>
+        </AnimatePresence>
+        <AnimatePresence>
+          {modal && <NotificationModal modal={modal} setModal={setModal} />}
         </AnimatePresence>
       </DashboardLayout>
     </>
