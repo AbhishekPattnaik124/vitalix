@@ -74,7 +74,12 @@ vitalix/
 
 ## 🌐 Live Deployment
 
-* Frontend: (https://vitalix-virid.vercel.app/)
+| Service | URL |
+|---|---|
+| 🌐 **Frontend** | [https://vitalix-frontend.onrender.com](https://vitalix-frontend.onrender.com) |
+| ⚙️ **Backend API** | [https://vitalix-xy2r.onrender.com](https://vitalix-xy2r.onrender.com) |
+
+> Hosted entirely on **Render** (Static Site + Web Service)
 
 ---
 
